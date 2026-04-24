@@ -1,39 +1,39 @@
+import re
+from typing import List
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from src.utils.logger import custom_logger as logger
 
 class TextCleaner:
-    def __init__(self, chunk_size=1000, chunk_overlap=200):
+    def __init__(self, chunk_size: int = 800, chunk_overlap: int = 150):
         self.splitter = RecursiveCharacterTextSplitter(
-            separators=["\n\n", "\n", ".", " "],
+            separators=["\n\n", "\n", ".", " ", ""],
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             length_function=len
         )
         
-    def clean(self, documents):
-        """Cleans and splits documents into chunks for RAG."""
-        logger.info(f"Cleaning {len(documents)} documents...")
+    def clean(self, documents: List[Document]) -> List[Document]:
+        """
+        Cleans documents by removing noise but preserving structure for splitting.
+        """
+        logger.info(f"Cleaning {len(documents)} documents for RAG...")
         
-        raw_texts = []
+        cleaned_docs = []
         for doc in documents:
             text = doc.page_content
             
-            # 1. Newlines aur Tabs ko space mein badlo
-            text = text.replace('\n', ' ').replace('\t', ' ')
+            # Remove only excessive horizontal whitespace, keep vertical for splitter
+            text = re.sub(r' +', ' ', text)  # Multi-space to single
+            text = text.replace('\t', ' ')   # Tabs to space
             
-            # 2. Faltu ke extra spaces hatao (e.g. "hello    world" -> "hello world")
-            text = ' '.join(text.split())
-            
-            # 3. Strip trailing/leading spaces
-            text = text.strip()
-            
-            if len(text) > 10: # Sirf kaam ka data rakho
-                raw_texts.append(text)
+            doc.page_content = text.strip()
+            if len(doc.page_content) > 10:
+                cleaned_docs.append(doc)
         
-        # Split into chunks
-        chunks = self.splitter.create_documents(raw_texts)
-        logger.info(f"Split into {len(chunks)} chunks.")
+        # Split documents (preserving metadata)
+        chunks = self.splitter.split_documents(cleaned_docs)
+        logger.success(f"Transformation complete. Generated {len(chunks)} smart chunks.")
         return chunks
 
 if __name__ == "__main__":

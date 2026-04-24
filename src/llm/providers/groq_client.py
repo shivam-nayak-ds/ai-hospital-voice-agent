@@ -13,6 +13,12 @@ class GroqProvider(BaseLLMProvider):
         self.client = Groq(api_key=settings.GROQ_API_KEY)
         self.model_name = settings.GROQ_MODEL
         logger.info(f"GroqProvider initialized with model: {self.model_name}")
+    
+    def generate(self, prompt: str) -> str:
+        """Simple wrapper for single prompt generation."""
+        messages = [{"role": "user", "content": prompt}]
+        return self.generate_response(messages)
+
 
     def generate_response(self, messages: List[Dict[str, str]], **kwargs) -> str:
         try:
