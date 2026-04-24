@@ -97,3 +97,15 @@
 2026-04-25 00:15:41.453 | INFO     | src.rag.vectorstrore.db:create_and_save:14 - Creating/Updating Vector DB at: data/chroma_db
 2026-04-25 00:15:44.819 | INFO     | src.rag.vectorstrore.db:create_and_save:23 - Knowledge successfully saved to data/chroma_db
 2026-04-25 00:15:44.819 | INFO     | __main__:run:43 - --- ✅ SUCCESS: Asha is now smarter than ever! ---
+2026-04-25 00:25:57.063 | INFO     | src.rag.embedder:__init__:11 - Initializing Local Embeddings with model: all-MiniLM-L6-v2...
+2026-04-25 00:26:04.568 | INFO     | src.rag.embedder:__init__:15 - Local Embeddings initialized successfully.
+2026-04-25 00:26:04.569 | INFO     | __main__:run:20 - ---  Starting Asha's Knowledge Ingestion (with Metadata) ---
+2026-04-25 00:26:04.570 | INFO     | src.rag.loader:load_data:14 - Loading documents from: data
+2026-04-25 00:26:05.295 | INFO     | src.rag.loader:load_data:40 - Successfully loaded 6 pages/documents.
+2026-04-25 00:26:05.296 | INFO     | src.rag.metadata:enrich_metadata:9 - Enriching metadata for 6 document pages...
+2026-04-25 00:26:05.298 | INFO     | src.rag.metadata:enrich_metadata:29 - Metadata enrichment complete.
+2026-04-25 00:26:05.298 | INFO     | src.rag.cleaner:clean:16 - Cleaning 6 documents...
+2026-04-25 00:26:05.300 | INFO     | src.rag.cleaner:clean:36 - Split into 7 chunks.
+2026-04-25 00:26:05.300 | INFO     | src.rag.vectorstrore.db:create_and_save:14 - Creating/Updating Vector DB at: data/chroma_db
+2026-04-25 00:26:08.220 | INFO     | src.rag.vectorstrore.db:create_and_save:23 - Knowledge successfully saved to data/chroma_db
+2026-04-25 00:26:08.220 | INFO     | __main__:run:38 - ---  SUCCESS: Knowledge Base updated with Metadata! ---
