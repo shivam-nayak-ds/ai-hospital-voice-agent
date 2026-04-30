@@ -1,33 +1,37 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.llm.providers.brain import LLMBrain
+from src.agent.orchestrator import AshaOrchestrator
 from src.utils.logger import custom_logger as logger
 
 def main():
-    logger.info("Asha AI Hospital Agent Session Started.")
-    brain = LLMBrain()
+    logger.info("Asha AI Hospital Agent Session Started (Orchestrated Mode).")
+    # Using the Orchestrator instead of raw Agent
+    orchestrator = AshaOrchestrator()
     
     print("\n" + "="*50)
-    print("🏥 Asha AI Hospital Assistant (Terminal Mode)")
+    print(" Asha AI Hospital Assistant (Orchestrated Mode)")
     print("Type 'exit' to quit. Let's talk!")
     print("="*50 + "\n")
 
     while True:
         try:
-            user_input = input("👤 You: ")
+            user_input = input(" You: ")
             
             if user_input.lower() in ["exit", "quit", "bye"]:
-                print("\nAsha: Goodbye! Have a healthy day ahead.")
+                print("\nAsha: Goodbye! Have a healthy day ahead. 🙏")
                 break
             
-            print("🤖 Asha: ", end="", flush=True)
+            if not user_input.strip():
+                continue
+
+            print(" Asha: ", end="", flush=True)
             
-            # Streaming the response token by token
-            for token in brain.stream_asha_response(user_input):
+            # Orchestrator handles Guardrails -> Mapping -> Agent
+            for token in orchestrator.handle_request(user_input):
                 print(token, end="", flush=True)
             
-            print("\n") # Line break after response
+            print("\n")
 
         except KeyboardInterrupt:
             print("\nSession ended.")

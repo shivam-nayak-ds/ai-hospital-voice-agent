@@ -1,47 +1,41 @@
-from pydantic import BaseModel , Field
-from typing import List , Optional , Dict
+from pydantic import BaseModel, Field
+from typing import List, Optional, Dict, ClassVar
 import uuid
+import time
 
 class PatientInfo(BaseModel):
-    """Details of the patient being assited"""
-    name : Optional[str] = None
-    age : Optional[str] = None
-    gender : Optional[str] = None
-    phone_number : Optional[str] = None
-    email: Optional[str] = None
-    address : Optional[str] = None
-    symptoms : Optional[str] = None
-    history : Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    symptoms: Optional[str] = None
 
-
-class AgentState(BaseModel):
+class AshaState(BaseModel):
     """
-    Overall state for the agent's brain
+    Asha's Multi-turn Conversation State & Memory
     """
-    session_id : str = Field(..., description="Unique  session ID")
-    patient : PatientInfo = Field(default_factory=PatientInfo)
+    # 🏁 State Constants
+    IDLE: ClassVar[str] = "IDLE"
+    LISTENING: ClassVar[str] = "LISTENING"
+    BOOKING: ClassVar[str] = "BOOKING_FLOW"
+    EMERGENCY: ClassVar[str] = "EMERGENCY_MODE"
 
-    # LLM Conversation History (So the AI remembers what was said)
-    messages : List[Dict[str,str]] = Field(default_factory=list)
-
-    # RAG Knowledge
-    context_documents : List[str] = Field(default_factory=list)
-    rag_context_text : str = ""
-
-    # Actions & Extraction
-    intent : str = "UNKNOWN"
-    extracted_data : Dict[str, str] = Field(default_factory=dict)
-    extracted_text : str = ""
-
-    # Execution flow
-    current_step : str = "start"
-    booking_details : Dict[str, str] = Field(default_factory=dict)
-
-    # Agent Output
-    response_text : str = ""
-    next_step : str = ""
-
-    # Error Handling
-    error_message : Optional[str] = None
-    max_retries_exceeded : bool = False
+    session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    current_state: str = "IDLE"
     
+    # 🧠 Memory & Context
+    messages: List[Dict[str, str]] = Field(default_factory=list)
+    patient: PatientInfo = Field(default_factory=PatientInfo)
+    
+    # 🛠️ Intent & Entities
+    intent: str = "GENERAL"
+    doctor_selected: Optional[str] = None
+    appointment_time: Optional[str] = None
+    
+    # 📈 Metrics (50 LPA Standard)
+    start_time: float = Field(default_factory=time.time)
+    latency_logs: Dict[str, float] = Field(default_factory=dict)
+
+    def reset_flow(self):
+        self.current_state = self.IDLE
+        self.doctor_selected = None
+        self.appointment_time = None
+        # 🔥 DO NOT reset patient info during a call! Let her remember the name.

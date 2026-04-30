@@ -27,11 +27,12 @@ class DocumentLoader:
             loader_cls=PyPDFLoader
         )
         
-        # Loading Text Files
+        # Loading Text/Markdown Files
         txt_loader = DirectoryLoader(
             self.data_path, 
-            glob="./*.txt", 
-            loader_cls=TextLoader
+            glob="./*.md", 
+            loader_cls=TextLoader,
+            loader_kwargs={'encoding': 'utf-8'}
         )
 
         try:

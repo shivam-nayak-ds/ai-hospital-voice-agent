@@ -8,7 +8,7 @@ class AshaGenerator:
     Response Generator: Takes context and query to produce a grounded response.
     """
     def __init__(self):
-        # We use our LLM Factory to get Groq/Llama
+        # We use our LLM Factory to get Groq
         self.llm = LLMFactory.get_provider("groq")
 
     def generate_response(self, query: str, context_docs: List[Document]) -> str:

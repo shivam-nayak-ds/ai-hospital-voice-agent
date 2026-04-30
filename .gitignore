@@ -1,9 +1,33 @@
+# Python
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.venv/
+env/
+venv/
+.ipynb_checkpoints/
+
+# Secrets
 .env
-__pycache__/
-*.pyc
+
+# Data & Logs
 logs/
-.venv/
-data/
+**/logs/
+**/*.log
 data/chroma_db/
-__pycache__/
-.venv/
+temp/
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary Scripts & Tests
+**/test_*.py
+**/fetch_*.py
+scripts/rag_stress_test.py
+test_sarvam_api.py
+fetch_voices.py
+test_voice.py
+update_db.py

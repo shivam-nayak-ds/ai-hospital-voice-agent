@@ -1,5 +1,5 @@
 import os
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from src.utils.logger import custom_logger as logger
 
 class VectorDBManager:
@@ -11,7 +11,7 @@ class VectorDBManager:
 
     def create_and_save(self, chunks, embedding_function):
         """Creates a new vector store from provided chunks."""
-        logger.info(f"Creating/Updating Vector DB at: {self.db_path}")
+        logger.info(f"Creating Vector DB at: {self.db_path}")
         try:
             # We use Chroma.from_documents to create the database
             vector_db = Chroma.from_documents(

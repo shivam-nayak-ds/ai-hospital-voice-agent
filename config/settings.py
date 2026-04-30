@@ -6,12 +6,12 @@ class Settings(BaseSettings):
     APP_NAME: str = "Asha-AI-Hospital-Agent"
     DEBUG: bool = True
     
-    # LLM Settings (Groq default)
-    GROQ_API_KEY: str
+    # LLM Settings
+    GROQ_API_KEY: Optional[str] = None
     GROQ_MODEL: str = "llama-3.1-8b-instant"
     
-    # RAG Settings (Local Embeddings)
-    # Ab humein GOOGLE_API_KEY ki zaroorat nahi hai yahan
+    GOOGLE_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-1.5-pro"
     EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
     VECTOR_DB_PATH: str = "data/chroma_db"
     
