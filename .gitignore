@@ -3,31 +3,94 @@
 **/*.pyc
 **/*.pyo
 **/*.pyd
+*.egg-info/
+build/
+dist/
 .venv/
 env/
 venv/
 .ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
 # Secrets
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.env
+*credentials*.json
+*credential*.json
+*secret*.json
+*service-account*.json
+config/google_creds.json
+config/*credentials*.json
+config/*credential*.json
+config/*secret*.json
+config/*service-account*.json
+config/twilio*.json
+config/deepgram*.json
+config/openai*.json
+config/groq*.json
 
 # Data & Logs
 logs/
 **/logs/
 **/*.log
 data/chroma_db/
+data/qdrant_storage/
+data/vector_db/
+data/uploads/
+data/tmp/
+data/*.sqlite
+data/*.sqlite3
+data/*.db
+data/user_memory.json
+dump.rdb
+*.rdb
+*.aof
+appendonlydir/
+static/temp_voice.mp3
+static/*.mp3
+static/*.wav
+static/*.webm
 temp/
+tmp/
+scratch/
+*.tmp
+*.bak
 
 # IDEs
 .vscode/
 .idea/
 .DS_Store
+Thumbs.db
 
-# Temporary Scripts & Tests
-**/test_*.py
-**/fetch_*.py
+# Temporary Scripts
+/test_*.py
+/fetch_*.py
+list_audio_devices.py
 scripts/rag_stress_test.py
+scripts/test_stt_connection.py
 test_sarvam_api.py
 fetch_voices.py
 test_voice.py
 update_db.py
+
+# Project Phase & Roadmap Files
+*PHASE*.md
+*ROADMAP*.md
+*roadmap*.md
+DAY_*.md
+implementation.md
+TODAY_*.md
+ENTERPRISE_*.md
+SYSTEM_AUDIT.md

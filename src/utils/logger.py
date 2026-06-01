@@ -45,6 +45,7 @@ def setup_logger():
         retention="10 days", 
         compression="zip",   
         level="INFO",
+        encoding="utf-8",    # 🔥 ELITE FIX: Support Hindi/Unicode characters
         filter=pii_filter
     )
     

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASHA - Premium Hospital AI Agent</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-circles">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+    </div>
+
+    <main class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-hospital-user"></i>
+                <span>ASHA AI</span>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active"><i class="fas fa-comment-medical"></i> Assistant</div>
+                <div class="nav-item"><i class="fas fa-calendar-check"></i> Appointments</div>
+                <div class="nav-item"><i class="fas fa-user-md"></i> Specialists</div>
+                <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+            </nav>
+            <div class="hospital-info">
+                <p><strong>City Care Hospital</strong></p>
+                <p>Indore, MP</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <section class="chat-section" id="assistant-tab">
+            <!-- Voice Mode Overlay -->
+            <div id="voice-overlay" class="voice-overlay">
+                <div class="orb-container">
+                    <div class="orb"></div>
+                    <div class="orb-ring"></div>
+                </div>
+                <h2 id="voice-status">Connecting to Ananya...</h2>
+                <p id="voice-transcript" class="transcript-preview"></p>
+                <button id="start-voice-btn" class="start-btn">Start Voice Session</button>
+            </div>
+
+            <header class="chat-header">
+                <div class="status-indicator">
+                    <span class="dot"></span>
+                    <span>Ananya is Online</span>
+                </div>
+                <h1>Health Assistant</h1>
+            </header>
+
+            <div id="chat-container" class="chat-messages">
+                <div class="message asha-msg">
+                    <div class="avatar"><i class="fas fa-user-nurse"></i></div>
+                    <div class="content">Good morning! I am Ananya, your Senior Health Executive. How can I assist you with appointments or hospital information today?</div>
+                </div>
+            </div>
+
+            <div class="controls-area">
+                <div class="visualizer-container" id="visualizer">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+                
+                <div class="input-container">
+                    <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
+                    <button id="send-btn" class="icon-btn"><i class="fas fa-paper-plane"></i></button>
+                    <div class="divider"></div>
+                    <button id="mic-btn" class="mic-btn"><i class="fas fa-microphone"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Appointments Tab -->
+        <section class="content-section" id="appointments-tab" style="display: none;">
+            <header class="chat-header">
+                <h1>Scheduled Appointments</h1>
+            </header>
+            <div class="table-container">
+                <table id="appointments-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Time</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Doctors Tab -->
+        <section class="content-section" id="doctors-tab" style="display: none;">
+            <header class="chat-header">
+                <h1>Our Specialists</h1>
+            </header>
+            <div class="grid-container" id="doctors-grid">
+                <!-- Data will be injected here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Audio element for TTS -->
+    <audio id="tts-audio"></audio>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

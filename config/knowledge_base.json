@@ -1,0 +1,25 @@
+{
+    "appointment": {
+        "keywords": ["appointment", "booking", "milna hai", "checkup", "consultation", "book doctor"],
+        "slots": ["patient_name", "doctor_name", "department", "time"],
+        "responses": {
+            "ask_name": "Zaroor, main aapki madad kar sakti hoon. Sabse pehle apna naam bataiye?",
+            "ask_doctor": "Aap kis doctor se milna chahte hain? Humare paas Cardiology, Orthopedics aur General Medicine ke expert hain.",
+            "confirm": "Theek hai, main {doctor_name} ke saath {time} baje aapki appointment confirm kar rahi hoon."
+        }
+    },
+    "info": {
+        "keywords": ["address", "timing", "location", "hospital kahan hai", "fees", "cost", "mri cost", "lab test"],
+        "responses": {
+            "address": "City Care Hospital, Sector 15, Gurgaon mein स्थित hai. Aap Google Maps par bhi humein dhoondh sakte hain.",
+            "timing": "Humara OPD subah 9 baje se shaam 8 baje tak chalu rehta hai. Emergency 24/7 khuli hai."
+        }
+    },
+    "emergency": {
+        "keywords": ["emergency", "accident", "serous", "heart attack", "gambhir", "khoon", "ambulance"],
+        "priority": "high",
+        "responses": {
+            "redirect": "Ye emergency lag rahi hai! Main turant ambulance bhej rahi hoon aur doctor ko alert kar rahi hoon. Line par bane rahiye."
+        }
+    }
+}

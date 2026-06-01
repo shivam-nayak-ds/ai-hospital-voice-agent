@@ -1,149 +1,258 @@
 import time
 import sys
-import os
-import threading
-import pyaudio
 import asyncio
-import queue
-from src.voice.recorder import AshaVoiceRecorder
+import enum
+import re
+from typing import Optional, Callable
+
 from src.voice.stt import AshaSTT
 from src.voice.tts import AshaTTS
-from src.agent.orchestrator import AshaOrchestrator
+from src.agent.multi_agent.swarm import AshaSwarm
+from src.agent.intent_classifier import AshaIntentClassifier
 from src.utils.logger import custom_logger as logger
-import enum
+from src.voice.voice_quality import filter_transcript, TranscriptDeduplicator, smart_split_sentences, speak_with_intent
 
 class VoiceState(enum.Enum):
-    IDLE = "IDLE"
     LISTENING = "LISTENING"
-    PROCESSING = "PROCESSING"
+    THINKING = "THINKING"
     SPEAKING = "SPEAKING"
 
-CURRENT_STATE = VoiceState.IDLE
-LAST_CALL_TIME = 0
+class AshaVoiceOrchestrator:
+    """
+    Enterprise Orchestrator: Fully Asynchronous.
+    Coordinates STT -> Intent -> LLM -> TTS using asyncio for concurrency.
+    Supports:
+      - Real-time Barge-in (Interruption)
+      - Non-blocking Sentence Streaming
+      - Async Task Management
+    """
 
-def start_voice_mode():
-    global CURRENT_STATE
-    try:
-        brain = AshaOrchestrator()
-        tts = AshaTTS()
-        recorder = AshaVoiceRecorder()
-        
-        # ==========================================
-        # 🧠 CORE LOGIC: Handling User's Sentence
-        # ==========================================
-        def handle_user_speech(text):
-            global CURRENT_STATE, LAST_CALL_TIME
-            
-            # 🔥 DEBOUNCE: Prevent multiple rapid LLM calls
-            if time.time() - LAST_CALL_TIME < 1.5:
-                return
-            LAST_CALL_TIME = time.time()
-            
-            if not text or len(text.strip()) < 2:
-                return
-                
-            sys.stdout.write(f"\r[HEARD]: \"{text}\"\n")
-            CURRENT_STATE = VoiceState.PROCESSING
-            tts.should_stop = False
-            
-            def llm_to_tts_streamer():
-                global CURRENT_STATE
-                CURRENT_STATE = VoiceState.SPEAKING
-                print("[ASHA]: ", end="", flush=True)
-                
-                full_response = ""
-                
-                # Stream LLM tokens (Groq is very fast, so this takes <1 second)
-                try:
-                    for token in brain.handle_request(text):
-                        if tts.should_stop:
-                            break # User interrupted! Stop generating.
-                            
-                        print(token, end="", flush=True)
-                        clean_token = token.replace("😊", "").replace("🙏", "").replace("🏥", "").replace("🚑", "")
-                        full_response += clean_token
-                        
-                except Exception as e:
-                    logger.error(f"LLM Crash: {e}")
-                    full_response = "माफ़ कीजिये, सिस्टम अभी व्यस्त है, कृपया थोड़ी देर बाद प्रयास करें।"
-                        
-                print("\n")
-                if full_response.strip() and not tts.should_stop:
-                    # Send entire response to Sarvam API at once (No pauses between sentences!)
-                    asyncio.run(tts.speak(full_response.strip()))
-                    
-                if brain.state.intent == "exit":
-                    logger.info("Call ended by user. Exiting.")
-                    import os
-                    os._exit(0)
-                    
-                CURRENT_STATE = VoiceState.IDLE
+    def __init__(self, output_callback: Optional[Callable] = None, user_id: str = "default_user"):
+        logger.info(f"Initializing Async ASHA Voice Orchestrator for {user_id}...")
+        self.brain = AshaSwarm(user_id=user_id)
+        self.classifier = AshaIntentClassifier()
+        self.tts = AshaTTS()
 
-            # Start LLM processing in a background thread
-            threading.Thread(target=llm_to_tts_streamer, daemon=True).start()
+        self.output_callback = output_callback
+        self.tts.output_callback = output_callback
 
-        # ==========================================
-        # 🎙️ EVENT LISTENER: Deepgram STT Callback
-        # ==========================================
-        def on_transcript(text, is_final):
-            global CURRENT_STATE
-            
-            # 🔥 BARGE-IN (Interruption Detection)
-            if CURRENT_STATE == VoiceState.SPEAKING:
-                if len(text.split()) > 2: # Strict Min words condition to avoid noise
-                    logger.warning("\n[BARGE-IN DETECTED] You interrupted Asha. Stopping audio!")
-                    tts.stop() # Instantly stop TTS
-                    CURRENT_STATE = VoiceState.LISTENING
+        self.state = VoiceState.LISTENING
+        self._current_task: Optional[asyncio.Task] = None
+        self._stop_event = asyncio.Event()
 
-            if is_final:
-                # Deepgram detected a pause. Execute the Brain!
-                handle_user_speech(text)
+        # Dedup guard
+        self._dedup = TranscriptDeduplicator(window_seconds=3.0)
 
-        # Initialize Deepgram
-        stt = AshaSTT(on_transcript_callback=on_transcript)
-        if not stt.start():
+        logger.success("Async Orchestrator Ready! [AsyncIO | Non-Blocking | Sub-500ms]")
+
+    # ─── Main Entry Point ───────────────────────────────────────────────────
+
+    def on_transcript(self, text: str, is_final: bool, confidence: float = 1.0):
+        """
+        Called by STT. We use asyncio.create_task to ensure 
+        we don't block the audio processing loop.
+        """
+        if not text.strip():
             return
 
-        # Mic Callback -> Directly pipe raw audio bytes to Deepgram!
-        frame_counter = 0
-        def mic_callback(in_data, frame_count, time_info, status):
-            nonlocal frame_counter
-            # 🔥 Echo Cancellation Hack: Mute mic while Asha is talking
-            if CURRENT_STATE != VoiceState.SPEAKING:
-                stt.send_audio(in_data)
-            else:
-                frame_counter += 1
-                if frame_counter % 20 == 0: # Every ~500ms
-                    stt.send_keepalive()
-            return (in_data, pyaudio.paContinue)
+        if not is_final:
+            sys.stdout.write(f"\r[HEARING]: {text}   ")
+            sys.stdout.flush()
+            return
 
-        recorder.start_recording(mic_callback)
-        logger.success("Asha Pro-Voice (Real-time Streaming) Active! Call connected.")
-        
-        # Initial Greeting
-        CURRENT_STATE = VoiceState.SPEAKING
-        print("[ASHA]: नमस्ते! मैं आशा हूँ, सिटी केयर हॉस्पिटल से।", flush=True)
-        asyncio.run(tts.speak("नमस्ते! मैं आशा हूँ, सिटी केयर हॉस्पिटल से। मैं आपकी क्या सहायता कर सकती हूँ?"))
-        CURRENT_STATE = VoiceState.IDLE
+        # Handle final transcript in an async context
+        asyncio.create_task(self._handle_final_transcript(text, confidence))
 
-        # Keep alive
-        while True:
-            time.sleep(1)
+    def on_speech_start(self):
+        """
+        BARGE-IN: User started talking.
+        Stop AI immediately for instant responsiveness.
+        """
+        if self.state == VoiceState.SPEAKING or self.state == VoiceState.THINKING:
+            logger.warning("[VAD] Speech started - interrupting AI.")
+            asyncio.create_task(self.stop_current_response())
 
-    except KeyboardInterrupt:
-        logger.info("Voice Agent stopped cleanly.")
-    except Exception as e:
-        logger.error(f"Orchestrator Error: {e}")
-    finally:
-        if 'recorder' in locals(): recorder.stop_recording()
-        if 'stt' in locals(): 
+    async def _handle_final_transcript(self, text: str, confidence: float):
+        """Async handler for final transcripts."""
+        clean_text = filter_transcript(text, confidence)
+        if not clean_text or self._dedup.is_duplicate(clean_text):
+            return
+
+        logger.info(f"\n[USER]: {clean_text}")
+
+        # ── BARGE-IN: Interrupt current speaking task ──
+        if self.state == VoiceState.SPEAKING or self.state == VoiceState.THINKING:
+            logger.warning("[BARGE-IN] User interrupted AI!")
+            await self.stop_current_response()
+
+        # Start new processing task
+        self._current_task = asyncio.create_task(self._process_and_respond(clean_text))
+
+    async def stop_current_response(self):
+        """Forcefully stops any ongoing thinking or speaking."""
+        if self._current_task and not self._current_task.done():
+            self._current_task.cancel()
             try:
-                # Fire and forget disconnect
-                threading.Thread(target=stt.disconnect, daemon=True).start()
-            except Exception:
+                await self._current_task
+            except asyncio.CancelledError:
                 pass
         
-        os._exit(0)
+        self._stop_event.set()
+        self.tts.stop()
+        self.state = VoiceState.LISTENING
+        self._stop_event.clear()
+
+    # ─── Processing Pipeline ────────────────────────────────────────────────
+
+    async def _process_and_respond(self, text: str):
+        """Async Pipeline: Intent -> Brain -> TTS."""
+        try:
+            self.state = VoiceState.THINKING
+            
+            # 1. Intent Classification (Make it async if possible, currently sync)
+            intent, score = self.classifier.classify(text)
+            logger.info(f"[INTENT]: {intent} (score={score:.2f})")
+
+            # 2. Generate & Stream Response
+            self.state = VoiceState.SPEAKING
+            await self._stream_response(text, intent)
+            
+        except asyncio.CancelledError:
+            logger.info("[Orchestrator] Task cancelled.")
+        except Exception as e:
+            logger.error(f"Response generation error: {e}")
+        finally:
+            self.state = VoiceState.LISTENING
+
+    async def _stream_response(self, text: str, intent: str):
+        """
+        Concurrent LLM Streaming + TTS Pre-fetching.
+        We fetch audio for sentence N+1 while sentence N is still playing.
+        This removes the robotic gaps between sentences.
+        """
+        sentence_buffer = ""
+        full_response = ""
+        audio_queue = asyncio.Queue()
+        
+        # Background task to play audio from the queue
+        playback_task = asyncio.create_task(self._playback_worker(audio_queue))
+
+        try:
+            for token in self.brain.run(text):
+                if self._stop_event.is_set():
+                    break
+
+                sentence_buffer += token
+                full_response += token
+
+                # Check if we have a complete sentence
+                sentences = smart_split_sentences(sentence_buffer)
+                if len(sentences) > 1:
+                    for sentence in sentences[:-1]:
+                        if sentence and not self._stop_event.is_set():
+                            logger.success(f"[AI STREAMING]: {sentence}")
+                            # Trigger TTS generation in background and put in queue
+                            asyncio.create_task(self._enqueue_audio(sentence, intent, audio_queue))
+                    sentence_buffer = sentences[-1]
+                
+                await asyncio.sleep(0)
+
+            # Enqueue remaining text
+            if sentence_buffer.strip() and not self._stop_event.is_set():
+                logger.success(f"[AI STREAMING]: {sentence_buffer.strip()}")
+                await self._enqueue_audio(sentence_buffer.strip(), intent, audio_queue)
+
+            # Signal end of stream
+            await audio_queue.put(None)
+            await playback_task
+
+        except Exception as e:
+            logger.error(f"Streaming response error: {e}")
+        finally:
+            logger.info(f"[AI FULL RESPONSE]: {full_response.strip()}")
+
+    async def _enqueue_audio(self, text: str, intent: str, queue: asyncio.Queue):
+        """Generates audio bytes and puts them in the playback queue."""
+        try:
+            # We use a wrapper to get audio bytes without playing them immediately
+            from src.voice.voice_quality import wrap_ssml
+            clean = re.sub(r'[*#_`]', '', text).strip()
+            
+            if self.tts.backend == "edge":
+                import edge_tts
+                ssml = wrap_ssml(clean, intent=intent, voice=self.tts.edge_voice)
+                communicate = edge_tts.Communicate(ssml, self.tts.edge_voice)
+                audio_data = b""
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        audio_data += chunk["data"]
+                if audio_data:
+                    await queue.put(audio_data)
+            else:
+                # Fallback for other backends
+                audio_data = await self.tts.generate_audio(clean)
+                if audio_data:
+                    await queue.put(audio_data)
+        except Exception as e:
+            logger.error(f"Audio enqueue error: {e}")
+
+    async def _playback_worker(self, queue: asyncio.Queue):
+        """Background worker that plays audio chunks sequentially."""
+        while not self._stop_event.is_set():
+            audio_data = await queue.get()
+            if audio_data is None: # End of stream signal
+                break
+            
+            try:
+                # Play the bytes using the TTS engine's playback logic
+                await self.tts._play_bytes(audio_data)
+            except Exception as e:
+                logger.error(f"Playback worker error: {e}")
+            finally:
+                queue.task_done()
+
+    async def _speak_async(self, text: str, intent: str = "llm_chat"):
+        """Async TTS execution."""
+        if not text or self._stop_event.is_set():
+            return
+        
+        try:
+            # speak_with_intent is already async
+            await speak_with_intent(self.tts, text, intent)
+        except Exception as e:
+            logger.error(f"TTS Execution Error: {e}")
+
+
+# ─── Local Mic Testing Entry Point ──────────────────────────────────────────
 
 if __name__ == "__main__":
-    start_voice_mode()
+    import pyaudio
+    from src.voice.recorder import AshaVoiceRecorder
+
+    orch = AshaVoiceOrchestrator()
+
+    # LOCAL MIC: Use linear16 @ 16000Hz (PyAudio default format)
+    stt = AshaSTT(on_transcript_callback=orch.on_transcript)
+    stt.start(encoding="linear16", sample_rate=16000)
+
+    recorder = AshaVoiceRecorder()
+
+    def mic_callback(in_data, frame_count, time_info, status):
+        stt.send_audio(in_data)
+        return (None, pyaudio.paContinue)
+
+    print("\n" + "="*50)
+    print("  ASHA LIVE VOICE TEST (Mic + English)")
+    print("  Speak into your microphone...")
+    print("  Press Ctrl+C to stop.")
+    print("="*50 + "\n")
+
+    try:
+        recorder.start_recording(callback=mic_callback)
+        while True:
+            time.sleep(0.5)
+    except KeyboardInterrupt:
+        print("\nStopping...")
+    finally:
+        recorder.stop_recording()
+        stt.disconnect()

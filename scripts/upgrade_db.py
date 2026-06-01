@@ -89,8 +89,100 @@ def upgrade_database():
             )
             logger.success("Inserted dummy data into BILLING_CATALOG.")
 
+        # 6. Create DEPARTMENTS Table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS DEPARTMENTS (
+            ID INT AUTO_INCREMENT PRIMARY KEY,
+            NAME VARCHAR(100) NOT NULL UNIQUE,
+            FLOOR INT,
+            HEAD_OF_DEPT VARCHAR(255),
+            CONTACT_EXT VARCHAR(10)
+        )
+        """)
+        logger.success("DEPARTMENTS table created.")
+
+        # 7. Create INSURANCE_PROVIDERS Table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS INSURANCE_PROVIDERS (
+            ID INT AUTO_INCREMENT PRIMARY KEY,
+            NAME VARCHAR(100) NOT NULL UNIQUE,
+            CASHLESS_AVAILABLE BOOLEAN DEFAULT TRUE,
+            CONTACT_PERSON VARCHAR(100),
+            HELPLINE VARCHAR(20)
+        )
+        """)
+        logger.success("INSURANCE_PROVIDERS table created.")
+
+        # 8. Create AUDIT_LOGS Table (For Enterprise Monitoring)
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS AUDIT_LOGS (
+            ID INT AUTO_INCREMENT PRIMARY KEY,
+            ACTION_TYPE VARCHAR(50), -- BOOKING, SEARCH, EMERGENCY, BILLING
+            USER_ID VARCHAR(255),
+            ACTION_DETAILS TEXT,
+            TIMESTAMP TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+        logger.success("AUDIT_LOGS table created.")
+
+        # 9. Create WARD_MANAGEMENT Table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS WARD_MANAGEMENT (
+            ID INT AUTO_INCREMENT PRIMARY KEY,
+            WARD_TYPE VARCHAR(100), -- ICU, GENERAL, PRIVATE, SEMI-PRIVATE
+            TOTAL_BEDS INT,
+            OCCUPIED_BEDS INT,
+            PRICE_PER_DAY DECIMAL(10, 2)
+        )
+        """)
+        logger.success("WARD_MANAGEMENT table created.")
+
+        # 10. Insert Realistic Seed Data
+        dept_data = [
+            ("Cardiology", 1, "Dr. Rajesh Sharma", "101"),
+            ("Radiology", 0, "Dr. Sunita Verma", "002"),
+            ("Pathology", 0, "Dr. Amit Khurana", "005"),
+            ("Oncology", 2, "Dr. Vikram Seth", "201"),
+            ("Pediatrics", 1, "Dr. Megha Singh", "105")
+        ]
+        
+        cursor.execute("SELECT COUNT(*) FROM DEPARTMENTS")
+        if cursor.fetchone()[0] == 0:
+            cursor.executemany(
+                "INSERT INTO DEPARTMENTS (NAME, FLOOR, HEAD_OF_DEPT, CONTACT_EXT) VALUES (%s, %s, %s, %s)",
+                dept_data
+            )
+
+        insurance_data = [
+            ("HDFC Ergo", True, "Rahul Mehta", "1800-2666"),
+            ("Star Health", True, "Priya Das", "1800-425-2255"),
+            ("Niva Bupa", True, "Sanjay Jha", "1860-500-8888"),
+            ("LIC Health", False, "Ramesh Kumar", "022-6827")
+        ]
+        
+        cursor.execute("SELECT COUNT(*) FROM INSURANCE_PROVIDERS")
+        if cursor.fetchone()[0] == 0:
+            cursor.executemany(
+                "INSERT INTO INSURANCE_PROVIDERS (NAME, CASHLESS_AVAILABLE, CONTACT_PERSON, HELPLINE) VALUES (%s, %s, %s, %s)",
+                insurance_data
+            )
+
+        ward_data = [
+            ("ICU", 15, 12, 6500.00),
+            ("General Ward", 50, 38, 1200.00),
+            ("Semi-Private", 20, 15, 3500.00),
+            ("Private Suite", 10, 4, 8500.00)
+        ]
+        
+        cursor.execute("SELECT COUNT(*) FROM WARD_MANAGEMENT")
+        if cursor.fetchone()[0] == 0:
+            cursor.executemany(
+                "INSERT INTO WARD_MANAGEMENT (WARD_TYPE, TOTAL_BEDS, OCCUPIED_BEDS, PRICE_PER_DAY) VALUES (%s, %s, %s, %s)",
+                ward_data
+            )
+
         connection.commit()
-        logger.success("🎉 Database Upgrade Complete! System is ready for Multi-Agent Phase.")
+        logger.success("🎉 Enterprise Database Expansion Complete!")
 
     except Exception as e:
         logger.error(f"Database Upgrade Failed: {e}")

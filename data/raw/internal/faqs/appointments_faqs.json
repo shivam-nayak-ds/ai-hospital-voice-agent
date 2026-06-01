@@ -1,0 +1,903 @@
+
+[
+  {
+    "id": "APT_001",
+    "category": "appointments",
+    "question": "How do I book an appointment at Lifeline Multi-Speciality Hospital?",
+    "answer": "You can book an appointment at Lifeline Multi-Speciality Hospital through our online appointment booking system on the website or by contacting the hospital reception directly.",
+    "keywords": ["booking", "appointment", "online", "reserve"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_002",
+    "category": "appointments",
+    "question": "What is the online appointment booking process at Lifeline Hospital?",
+    "answer": "Visit the hospital website, select your preferred specialist and department, choose a convenient date and time slot, and complete the booking with your contact details.",
+    "keywords": ["online booking", "process", "steps", "procedure"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_003",
+    "category": "appointments",
+    "question": "Can I book an appointment without registering online?",
+    "answer": "Yes, you can call the hospital reception or visit in person to book an appointment without using the online system.",
+    "keywords": ["appointment", "booking", "without online", "phone"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_004",
+    "category": "appointments",
+    "question": "What information do I need to provide while booking an appointment?",
+    "answer": "Provide your name, contact number, email address, preferred specialist/department, and preferred date and time for the appointment.",
+    "keywords": ["information", "details", "booking", "requirements"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_005",
+    "category": "appointments",
+    "question": "Is there a registration fee for booking an appointment at Lifeline Hospital?",
+    "answer": "Appointment booking at Lifeline Multi-Speciality Hospital is free. Consultation charges apply based on the doctor's fees.",
+    "keywords": ["registration", "fee", "cost", "booking"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_006",
+    "category": "appointments",
+    "question": "What are the OPD timings at Lifeline Hospital?",
+    "answer": "The OPD timings at Lifeline Multi-Speciality Hospital are 8:00 AM to 8:00 PM, Monday to Sunday.",
+    "keywords": ["OPD", "timings", "hours", "opening"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_007",
+    "category": "appointments",
+    "question": "Can I book an appointment after 8 PM at Lifeline Hospital?",
+    "answer": "OPD appointments are available until 8:00 PM. Emergency services are available 24x7. For urgent cases after OPD hours, visit the Emergency Department.",
+    "keywords": ["after hours", "evening", "appointment", "emergency"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_008",
+    "category": "appointments",
+    "question": "How far in advance can I book an appointment at Lifeline Hospital?",
+    "answer": "You can book appointments up to 30 days in advance at Lifeline Multi-Speciality Hospital depending on doctor availability.",
+    "keywords": ["advance booking", "future", "schedule", "days ahead"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_009",
+    "category": "appointments",
+    "question": "Can I book an appointment for the same day at Lifeline Hospital?",
+    "answer": "Yes, same-day appointments are available based on doctor availability. Contact the reception or check the online system for available slots.",
+    "keywords": ["same day", "urgent", "immediate", "today"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_010",
+    "category": "appointments",
+    "question": "What appointment slots are available at Lifeline Hospital?",
+    "answer": "Lifeline Multi-Speciality Hospital offers appointment slots throughout the day from 8:00 AM to 8:00 PM in 15-30 minute intervals based on availability.",
+    "keywords": ["slots", "availability", "time", "schedule"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_011",
+    "category": "appointments",
+    "question": "How do I cancel my appointment at Lifeline Hospital?",
+    "answer": "You can cancel your appointment through the online system or by contacting the hospital reception with your appointment reference number.",
+    "keywords": ["cancel", "cancellation", "withdraw", "appointment"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_012",
+    "category": "appointments",
+    "question": "Is there a cancellation fee for appointments at Lifeline Hospital?",
+    "answer": "Appointment booking is free at Lifeline Multi-Speciality Hospital. Cancellation policy may vary. Contact the hospital for specific details.",
+    "keywords": ["cancellation", "fee", "charge", "refund"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_013",
+    "category": "appointments",
+    "question": "What is the cancellation deadline for appointments at Lifeline Hospital?",
+    "answer": "Please contact Lifeline Multi-Speciality Hospital for specific cancellation deadline policies.",
+    "keywords": ["cancellation", "deadline", "notice", "time"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_014",
+    "category": "appointments",
+    "question": "How do I reschedule my appointment at Lifeline Hospital?",
+    "answer": "You can reschedule your appointment through the online system or by contacting the hospital reception with your appointment details.",
+    "keywords": ["reschedule", "change", "modify", "appointment"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_015",
+    "category": "appointments",
+    "question": "Can I reschedule my appointment multiple times?",
+    "answer": "Yes, you can reschedule your appointment multiple times through the online system or by contacting the reception at Lifeline Hospital.",
+    "keywords": ["reschedule", "multiple", "change", "times"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_016",
+    "category": "appointments",
+    "question": "How much time should I arrive before my appointment at Lifeline Hospital?",
+    "answer": "Please arrive 10-15 minutes before your scheduled appointment time at Lifeline Multi-Speciality Hospital.",
+    "keywords": ["arrival", "early", "time", "before"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_017",
+    "category": "appointments",
+    "question": "What happens if I arrive late for my appointment at Lifeline Hospital?",
+    "answer": "If you arrive late, the doctor may reschedule you based on availability. Inform the reception immediately upon arrival.",
+    "keywords": ["late", "arrival", "delay", "rescheduling"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_018",
+    "category": "appointments",
+    "question": "What is the policy for missed appointments at Lifeline Hospital?",
+    "answer": "Lifeline Multi-Speciality Hospital may charge a missed appointment fee. Please contact the hospital for detailed policy information.",
+    "keywords": ["missed", "no-show", "policy", "fee"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_019",
+    "category": "appointments",
+    "question": "How long does a typical appointment take at Lifeline Hospital?",
+    "answer": "A typical appointment at Lifeline Multi-Speciality Hospital lasts 15-30 minutes depending on the nature of consultation.",
+    "keywords": ["duration", "time", "length", "appointment"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_020",
+    "category": "appointments",
+    "question": "Can I bring an attendant for my appointment at Lifeline Hospital?",
+    "answer": "Yes, you can bring an attendant or family member to your appointment at Lifeline Multi-Speciality Hospital.",
+    "keywords": ["attendant", "family", "companion", "accompanying"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_021",
+    "category": "appointments",
+    "question": "Do I need to bring any documents for my first appointment at Lifeline Hospital?",
+    "answer": "Bring your identification proof, insurance card if applicable, and any previous medical records. This helps with better diagnosis.",
+    "keywords": ["documents", "first visit", "ID", "medical records"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_022",
+    "category": "appointments",
+    "question": "How do I get an appointment confirmation at Lifeline Hospital?",
+    "answer": "You will receive a confirmation SMS and email with your appointment details upon successful booking at Lifeline Hospital.",
+    "keywords": ["confirmation", "booking", "email", "SMS"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_023",
+    "category": "appointments",
+    "question": "Will I receive appointment reminders at Lifeline Hospital?",
+    "answer": "Yes, Lifeline Multi-Speciality Hospital sends appointment reminders via SMS and email before your scheduled appointment.",
+    "keywords": ["reminder", "notification", "SMS", "email"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_024",
+    "category": "appointments",
+    "question": "How many days before the appointment will I receive a reminder?",
+    "answer": "Lifeline Multi-Speciality Hospital sends reminders typically 24 hours and 1 hour before your appointment.",
+    "keywords": ["reminder", "notification", "timing", "hours"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_025",
+    "category": "appointments",
+    "question": "Can I update my contact details for appointment reminders at Lifeline Hospital?",
+    "answer": "Yes, you can update your contact details through the online system or by contacting the reception at Lifeline Hospital.",
+    "keywords": ["update", "contact", "details", "change"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_026",
+    "category": "appointments",
+    "question": "Which specialists are available at Lifeline Hospital?",
+    "answer": "Lifeline Multi-Speciality Hospital has 120+ specialists across various departments including cardiology, neurology, orthopedics, and more.",
+    "keywords": ["specialists", "doctors", "departments", "available"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_027",
+    "category": "appointments",
+    "question": "How do I choose a specialist for my appointment at Lifeline Hospital?",
+    "answer": "Select your medical condition or department during booking. The system will show available specialists for your requirement.",
+    "keywords": ["specialist", "choose", "selection", "department"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_028",
+    "category": "appointments",
+    "question": "Can I request a specific doctor at Lifeline Hospital?",
+    "answer": "Yes, you can request a specific doctor while booking your appointment at Lifeline Multi-Speciality Hospital.",
+    "keywords": ["specific doctor", "request", "preference", "choose"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_029",
+    "category": "appointments",
+    "question": "How can I know the doctor's experience and qualifications at Lifeline Hospital?",
+    "answer": "Doctor profiles with qualifications and experience are available on the online booking system at Lifeline Hospital.",
+    "keywords": ["doctor profile", "qualifications", "experience", "credentials"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_030",
+    "category": "appointments",
+    "question": "Is there a doctor availability list at Lifeline Hospital?",
+    "answer": "Yes, the online booking system shows real-time availability of doctors and their appointment slots at Lifeline Hospital.",
+    "keywords": ["availability", "doctor", "schedule", "slots"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_031",
+    "category": "appointments",
+    "question": "Can I book an appointment with a doctor on a specific day at Lifeline Hospital?",
+    "answer": "Yes, you can select your preferred date during booking. The system will show available slots for that date.",
+    "keywords": ["specific day", "date", "booking", "preference"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_032",
+    "category": "appointments",
+    "question": "What if my preferred doctor is not available for appointment at Lifeline Hospital?",
+    "answer": "You can book with another available doctor in the same specialty or request to be on a waiting list.",
+    "keywords": ["unavailable", "alternative", "waiting list", "other doctor"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_033",
+    "category": "appointments",
+    "question": "Can I book an appointment for a walk-in consultation at Lifeline Hospital?",
+    "answer": "Yes, walk-in consultations are available at Lifeline Multi-Speciality Hospital during OPD timings (8 AM - 8 PM).",
+    "keywords": ["walk-in", "consultation", "direct visit", "without appointment"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_034",
+    "category": "appointments",
+    "question": "How long do I have to wait for a walk-in appointment at Lifeline Hospital?",
+    "answer": "Walk-in consultation waiting time depends on current patient load. Typically it ranges from 15-45 minutes.",
+    "keywords": ["walk-in", "waiting time", "queue", "duration"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_035",
+    "category": "appointments",
+    "question": "Is telemedicine appointment available at Lifeline Hospital?",
+    "answer": "Yes, Lifeline Multi-Speciality Hospital offers telemedicine appointments for remote consultations with specialists.",
+    "keywords": ["telemedicine", "online consultation", "virtual", "remote"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_036",
+    "category": "appointments",
+    "question": "How do I book a telemedicine appointment at Lifeline Hospital?",
+    "answer": "Select the telemedicine option during online booking and choose your preferred video consultation time slot.",
+    "keywords": ["telemedicine", "online", "booking", "process"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_037",
+    "category": "appointments",
+    "question": "What is the cost of telemedicine consultation at Lifeline Hospital?",
+    "answer": "Telemedicine consultation charges are similar to in-person consultation. Please check the specialist's fees during booking.",
+    "keywords": ["telemedicine", "cost", "fees", "charges"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_038",
+    "category": "appointments",
+    "question": "Do I need to download an app for telemedicine appointment at Lifeline Hospital?",
+    "answer": "You can use the hospital's website or app for telemedicine. The consultation link will be provided in your confirmation.",
+    "keywords": ["telemedicine", "app", "download", "link"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_039",
+    "category": "appointments",
+    "question": "Can I request a prescription through telemedicine at Lifeline Hospital?",
+    "answer": "Yes, doctors can issue prescriptions during telemedicine consultations at Lifeline Hospital.",
+    "keywords": ["telemedicine", "prescription", "medicine", "medication"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_040",
+    "category": "appointments",
+    "question": "How do I register as a new patient at Lifeline Hospital?",
+    "answer": "You can register as a new patient through the online system during appointment booking or at the reception desk.",
+    "keywords": ["new patient", "registration", "first visit", "enroll"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_041",
+    "category": "appointments",
+    "question": "What information is required for new patient registration at Lifeline Hospital?",
+    "answer": "Name, age, contact number, email, address, and medical history are required for new patient registration.",
+    "keywords": ["registration", "new patient", "information", "details"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_042",
+    "category": "appointments",
+    "question": "Do I need to register every time I visit Lifeline Hospital?",
+    "answer": "No, once registered, your details are saved in the system. You only need to register once as a new patient.",
+    "keywords": ["registration", "one time", "permanent", "patient"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_043",
+    "category": "appointments",
+    "question": "How do I book an appointment as an existing patient at Lifeline Hospital?",
+    "answer": "Log in with your registered details or use your patient ID to book appointments directly.",
+    "keywords": ["existing patient", "repeat patient", "booking", "login"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_044",
+    "category": "appointments",
+    "question": "Can I book multiple appointments at once at Lifeline Hospital?",
+    "answer": "Yes, you can book multiple appointments for different specialties or follow-up visits during one session.",
+    "keywords": ["multiple appointments", "bulk booking", "several", "combined"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_045",
+    "category": "appointments",
+    "question": "Is there a waiting list for appointment booking at Lifeline Hospital?",
+    "answer": "Yes, if your preferred slot is full, you can join the waiting list for cancellations.",
+    "keywords": ["waiting list", "cancellation", "priority", "backup"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_046",
+    "category": "appointments",
+    "question": "How long does a follow-up appointment usually take at Lifeline Hospital?",
+    "answer": "Follow-up appointments typically last 10-20 minutes depending on the consultation nature.",
+    "keywords": ["follow-up", "duration", "time", "appointment"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_047",
+    "category": "appointments",
+    "question": "Can I book a follow-up appointment during my current consultation at Lifeline Hospital?",
+    "answer": "Yes, the doctor can schedule your follow-up appointment during the consultation at Lifeline Hospital.",
+    "keywords": ["follow-up", "next appointment", "booking", "schedule"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_048",
+    "category": "appointments",
+    "question": "How often should I schedule follow-up appointments at Lifeline Hospital?",
+    "answer": "Follow-up frequency depends on your medical condition. Your doctor will recommend the appropriate schedule.",
+    "keywords": ["follow-up", "frequency", "interval", "schedule"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_049",
+    "category": "appointments",
+    "question": "Can I get appointment slots during lunch hours at Lifeline Hospital?",
+    "answer": "Yes, appointment slots are available throughout the day including lunch hours from 8 AM to 8 PM.",
+    "keywords": ["lunch time", "afternoon", "slots", "availability"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_050",
+    "category": "appointments",
+    "question": "Are there separate appointment queues for different departments at Lifeline Hospital?",
+    "answer": "Yes, each department maintains its own appointment schedule and consultation queue at Lifeline Hospital.",
+    "keywords": ["department", "queue", "separate", "schedule"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_051",
+    "category": "appointments",
+    "question": "Can I book an appointment for a family member at Lifeline Hospital?",
+    "answer": "Yes, you can book appointments for family members using their details during the registration process.",
+    "keywords": ["family", "relative", "booking", "another person"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_052",
+    "category": "appointments",
+    "question": "How many family members can I book appointments for at once at Lifeline Hospital?",
+    "answer": "You can book appointments for multiple family members. Please use individual details for each person.",
+    "keywords": ["family", "multiple", "bulk booking", "relatives"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_053",
+    "category": "appointments",
+    "question": "What payment methods are accepted for appointment fees at Lifeline Hospital?",
+    "answer": "Lifeline Hospital accepts cash, debit cards, credit cards, and digital payments for consultation fees.",
+    "keywords": ["payment", "methods", "fees", "charges"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_054",
+    "category": "appointments",
+    "question": "Can I pay for the appointment online at Lifeline Hospital?",
+    "answer": "Yes, you can make online payments during or after appointment booking at Lifeline Hospital.",
+    "keywords": ["online payment", "digital", "advance", "fee"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_055",
+    "category": "appointments",
+    "question": "Do I get a refund if I cancel my appointment at Lifeline Hospital?",
+    "answer": "Please contact the hospital for cancellation and refund policies at Lifeline Multi-Speciality Hospital.",
+    "keywords": ["refund", "cancellation", "money back", "policy"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_056",
+    "category": "appointments",
+    "question": "Is consultation fee different for walk-in patients at Lifeline Hospital?",
+    "answer": "Consultation fees are the same for both online-booked and walk-in patients at Lifeline Hospital.",
+    "keywords": ["walk-in", "fee", "cost", "charges"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_057",
+    "category": "appointments",
+    "question": "Can I get an appointment on weekends at Lifeline Hospital?",
+    "answer": "Yes, Lifeline Multi-Speciality Hospital operates on weekends with full appointment scheduling.",
+    "keywords": ["weekend", "Saturday", "Sunday", "appointment"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_058",
+    "category": "appointments",
+    "question": "Are appointment slots available on public holidays at Lifeline Hospital?",
+    "answer": "Lifeline Multi-Speciality Hospital remains open on most public holidays. Please check availability during holidays.",
+    "keywords": ["public holiday", "festival", "appointment", "special day"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_059",
+    "category": "appointments",
+    "question": "How do I change my preferred doctor after booking an appointment?",
+    "answer": "You can modify your doctor preference through the online system or by contacting the reception.",
+    "keywords": ["change doctor", "modify", "different doctor", "switch"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_060",
+    "category": "appointments",
+    "question": "Can I request a female doctor at Lifeline Hospital?",
+    "answer": "Yes, you can request a female doctor during booking at Lifeline Multi-Speciality Hospital.",
+    "keywords": ["female doctor", "preference", "request", "lady doctor"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_061",
+    "category": "appointments",
+    "question": "What if I don't have a smartphone for online booking at Lifeline Hospital?",
+    "answer": "You can book appointments by calling the hospital reception or visiting in person.",
+    "keywords": ["offline booking", "phone", "direct", "without internet"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_062",
+    "category": "appointments",
+    "question": "How do I get my appointment reference number at Lifeline Hospital?",
+    "answer": "Your appointment reference number is provided in the confirmation SMS and email sent after booking.",
+    "keywords": ["reference number", "booking ID", "confirmation", "details"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_063",
+    "category": "appointments",
+    "question": "Can I access my appointment history at Lifeline Hospital?",
+    "answer": "Yes, you can view your appointment history in your patient profile on the online system.",
+    "keywords": ["appointment history", "records", "past", "profile"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_064",
+    "category": "appointments",
+    "question": "How far is Lifeline Hospital from C21 Mall in Vijay Nagar?",
+    "answer": "Lifeline Multi-Speciality Hospital is located near C21 Mall in Vijay Nagar, Sector 26, Indore.",
+    "keywords": ["location", "distance", "C21 Mall", "directions"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_065",
+    "category": "appointments",
+    "question": "Is there adequate parking near Lifeline Hospital for appointment visitors?",
+    "answer": "Yes, Lifeline Hospital has multi-level parking facilities for patients and visitors.",
+    "keywords": ["parking", "facility", "vehicle", "space"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_066",
+    "category": "appointments",
+    "question": "Can I reschedule an appointment to an earlier date at Lifeline Hospital?",
+    "answer": "Yes, if slots are available, you can reschedule your appointment to an earlier date.",
+    "keywords": ["earlier date", "reschedule", "sooner", "advance"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_067",
+    "category": "appointments",
+    "question": "What is the policy if the doctor cancels the appointment at Lifeline Hospital?",
+    "answer": "The hospital will notify you immediately and offer alternative slots or refund based on the cancellation policy.",
+    "keywords": ["doctor cancel", "postpone", "notification", "alternative"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_068",
+    "category": "appointments",
+    "question": "Can I request home consultation before booking a hospital appointment at Lifeline Hospital?",
+    "answer": "Please contact Lifeline Hospital to inquire about home consultation services and appointments.",
+    "keywords": ["home consultation", "visit", "appointment", "home service"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_069",
+    "category": "appointments",
+    "question": "How do I provide feedback about my appointment experience at Lifeline Hospital?",
+    "answer": "You can provide feedback through the online portal or by contacting the hospital administration.",
+    "keywords": ["feedback", "review", "experience", "rating"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_070",
+    "category": "appointments",
+    "question": "Are group consultation appointments available at Lifeline Hospital?",
+    "answer": "Please contact Lifeline Hospital to inquire about special group consultation arrangements.",
+    "keywords": ["group consultation", "family session", "multiple patients", "special"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_071",
+    "category": "appointments",
+    "question": "Can I book an urgent appointment at Lifeline Hospital?",
+    "answer": "Yes, urgent same-day or emergency appointments can be arranged. Contact reception immediately.",
+    "keywords": ["urgent", "emergency", "same day", "priority"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_072",
+    "category": "appointments",
+    "question": "What is the maximum number of patients per appointment slot at Lifeline Hospital?",
+    "answer": "Each appointment slot is typically for one patient. Additional family members can accompany.",
+    "keywords": ["patients", "slot", "group", "capacity"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_073",
+    "category": "appointments",
+    "question": "How do I know if my appointment is confirmed at Lifeline Hospital?",
+    "answer": "You will receive a confirmation SMS and email with your appointment details and reference number.",
+    "keywords": ["confirmation", "verification", "status", "details"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_074",
+    "category": "appointments",
+    "question": "Can I modify appointment details after confirmation at Lifeline Hospital?",
+    "answer": "Yes, you can modify date, time, or doctor before the appointment through the online system.",
+    "keywords": ["modify", "change", "update", "after confirmation"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_075",
+    "category": "appointments",
+    "question": "What happens if I forget my appointment at Lifeline Hospital?",
+    "answer": "The doctor may mark it as a missed appointment. A no-show fee may apply. Please reschedule at your earliest convenience.",
+    "keywords": ["forget", "missed", "no-show", "reschedule"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_076",
+    "category": "appointments",
+    "question": "Can I get a written appointment confirmation at Lifeline Hospital?",
+    "answer": "Yes, the printed or digital confirmation can be obtained from the reception at Lifeline Hospital.",
+    "keywords": ["written confirmation", "print", "certificate", "proof"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_077",
+    "category": "appointments",
+    "question": "Is there a priority queue for senior citizens at Lifeline Hospital appointments?",
+    "answer": "Yes, Lifeline Hospital provides priority services for senior citizens and elderly patients.",
+    "keywords": ["senior citizen", "elderly", "priority", "queue"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_078",
+    "category": "appointments",
+    "question": "Can I request an extended consultation time during appointment at Lifeline Hospital?",
+    "answer": "Please request extended time while booking or inform the doctor during consultation at Lifeline Hospital.",
+    "keywords": ["extended time", "longer consultation", "extra time", "duration"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_079",
+    "category": "appointments",
+    "question": "What is the typical wait time between appointment booking and actual appointment at Lifeline Hospital?",
+    "answer": "Wait time depends on doctor availability and current schedules. Typically it ranges from same-day to 30 days.",
+    "keywords": ["wait time", "interval", "duration", "schedule"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_080",
+    "category": "appointments",
+    "question": "Can I attend appointment virtually even if it's scheduled as in-person at Lifeline Hospital?",
+    "answer": "Please contact Lifeline Hospital to request a virtual appointment change if circumstances allow.",
+    "keywords": ["virtual", "telemedicine", "online", "change format"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_081",
+    "category": "appointments",
+    "question": "How do I book an appointment if I'm not from Indore at Lifeline Hospital?",
+    "answer": "You can book telemedicine appointments or schedule in-person appointments in advance from anywhere.",
+    "keywords": ["non-local", "out-station", "booking", "remote"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_082",
+    "category": "appointments",
+    "question": "Can I book an appointment for diagnostic tests at Lifeline Hospital?",
+    "answer": "Yes, you can book diagnostic test appointments through the online system or reception.",
+    "keywords": ["diagnostic", "test", "appointment", "lab"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_083",
+    "category": "appointments",
+    "question": "What is the appointment booking mobile number at Lifeline Hospital?",
+    "answer": "Contact the Lifeline Multi-Speciality Hospital reception for appointment booking details and contact numbers.",
+    "keywords": ["phone number", "contact", "mobile", "call"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_084",
+    "category": "appointments",
+    "question": "How do I report a problem with my appointment at Lifeline Hospital?",
+    "answer": "Contact the hospital administration or complaint department with your appointment reference number.",
+    "keywords": ["complaint", "problem", "issue", "report"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_085",
+    "category": "appointments",
+    "question": "Are there any restrictions on appointment booking at Lifeline Hospital?",
+    "answer": "No major restrictions. Appointments are available for all ages. Special accommodations for elderly or disabled patients.",
+    "keywords": ["restrictions", "limitations", "conditions", "requirements"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_086",
+    "category": "appointments",
+    "question": "Can I book back-to-back appointments with different specialists at Lifeline Hospital?",
+    "answer": "Yes, you can schedule consecutive appointments. Inform the reception for better time management.",
+    "keywords": ["consecutive", "multiple", "back-to-back", "same day"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_087",
+    "category": "appointments",
+    "question": "What should I do if I arrive without an appointment at Lifeline Hospital?",
+    "answer": "Visit the walk-in consultation desk or inform the reception. They will help schedule a consultation based on availability.",
+    "keywords": ["walk-in", "without appointment", "direct", "same day"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_088",
+    "category": "appointments",
+    "question": "How are appointments prioritized at Lifeline Hospital if multiple patients want the same slot?",
+    "answer": "Appointments are booked on first-come-first-served basis. Waiting lists are maintained for fully booked slots.",
+    "keywords": ["priority", "first come", "slot", "queue"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_089",
+    "category": "appointments",
+    "question": "Can I book an appointment with a junior doctor instead of senior doctor at Lifeline Hospital?",
+    "answer": "Yes, you can choose doctors based on their seniority and experience shown in the booking system.",
+    "keywords": ["junior doctor", "senior doctor", "choice", "preference"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_090",
+    "category": "appointments",
+    "question": "What is the appointment duration for pediatric consultations at Lifeline Hospital?",
+    "answer": "Pediatric consultations typically last 15-20 minutes depending on the condition at Lifeline Hospital.",
+    "keywords": ["pediatric", "children", "duration", "time"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_091",
+    "category": "appointments",
+    "question": "Can I bring medical test reports to my appointment at Lifeline Hospital?",
+    "answer": "Yes, bringing previous test reports helps the doctor review your medical history during consultation.",
+    "keywords": ["reports", "documents", "medical", "bring"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_092",
+    "category": "appointments",
+    "question": "How do I access my appointment confirmation on mobile at Lifeline Hospital?",
+    "answer": "You can access confirmation through SMS, email, or by logging into your account on the hospital's mobile app.",
+    "keywords": ["confirmation", "mobile", "app", "access"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_093",
+    "category": "appointments",
+    "question": "Is prior appointment necessary for emergency consultation at Lifeline Hospital?",
+    "answer": "No, emergency cases are treated immediately at the 24x7 Emergency Department without prior appointment.",
+    "keywords": ["emergency", "prior appointment", "urgent", "immediate"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_094",
+    "category": "appointments",
+    "question": "Can I get an appointment for a pre-operative consultation at Lifeline Hospital?",
+    "answer": "Yes, pre-operative consultations can be scheduled. Contact the relevant department for appointment.",
+    "keywords": ["pre-operative", "surgery", "consultation", "appointment"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_095",
+    "category": "appointments",
+    "question": "How do I schedule a post-operative follow-up appointment at Lifeline Hospital?",
+    "answer": "The hospital staff will schedule follow-up appointments before discharge or through the online system.",
+    "keywords": ["post-operative", "follow-up", "after surgery", "schedule"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_096",
+    "category": "appointments",
+    "question": "Can I request an appointment on video call for initial consultation at Lifeline Hospital?",
+    "answer": "Yes, telemedicine appointments are available for initial consultations at Lifeline Hospital.",
+    "keywords": ["video call", "telemedicine", "virtual", "online"],
+    "priority": "high",
+    "language": "en"
+  },
+  {
+    "id": "APT_097",
+    "category": "appointments",
+    "question": "What is the cancellation refund timeline at Lifeline Hospital?",
+    "answer": "Please contact Lifeline Hospital for specific refund timeline and cancellation policies.",
+    "keywords": ["refund", "timeline", "cancellation", "payment"],
+    "priority": "medium",
+    "language": "en"
+  },
+  {
+    "id": "APT_098",
+    "category": "appointments",
+    "question": "Can I book an appointment as a guest without full registration at Lifeline Hospital?",
+    "answer": "Yes, guest appointments can be booked with basic details. Full registration is optional for first visit.",
+    "keywords": ["guest", "without registration", "minimal details", "booking"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_099",
+    "category": "appointments",
+    "question": "How do I get appointment history for tax or insurance purposes at Lifeline Hospital?",
+    "answer": "Request your medical records and appointment history from the records department for documentation.",
+    "keywords": ["history", "tax", "insurance", "documentation"],
+    "priority": "low",
+    "language": "en"
+  },
+  {
+    "id": "APT_100",
+    "category": "appointments",
+    "question": "What should I do if I need to postpone my appointment indefinitely at Lifeline Hospital?",
+    "answer": "Cancel the appointment and rebooking can be done anytime based on future availability at Lifeline Hospital.",
+    "keywords": ["postpone", "cancel", "future", "indefinite"],
+    "priority": "medium",
+    "language": "en"
+  }
+]
