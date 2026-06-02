@@ -27,7 +27,13 @@ def setup_logger():
     """
     Configures standard logging for both Console and File.
     """
-    
+    # Force UTF-8 on stdout to prevent UnicodeEncodeError with emojis on Windows console
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+            
     logger.remove()
 
 

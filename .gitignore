@@ -45,15 +45,7 @@ config/groq*.json
 logs/
 **/logs/
 **/*.log
-data/chroma_db/
-data/qdrant_storage/
-data/vector_db/
-data/uploads/
-data/tmp/
-data/*.sqlite
-data/*.sqlite3
-data/*.db
-data/user_memory.json
+data/
 dump.rdb
 *.rdb
 *.aof
