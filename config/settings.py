@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     # Vector Database
     QDRANT_HOST: str = "localhost"
     QDRANT_PORT: int = 6333
+    QDRANT_URL: Optional[str] = None
+    QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION: str = "hospital_knowledge"
     
     # Logging

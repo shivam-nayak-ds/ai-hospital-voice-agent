@@ -23,7 +23,7 @@ class KnowledgeBaseLoader:
             return []
 
         all_documents = []
-        logger.info(f"📁 Scanning knowledge base directory: {self.directory_path}")
+        logger.info(f"Scanning knowledge base directory: {self.directory_path}")
 
         for root, dirs, files in os.walk(self.directory_path):
             for file in files:
@@ -54,7 +54,7 @@ class KnowledgeBaseLoader:
                         continue
                         
                 except Exception as e:
-                    logger.warning(f"⚠️ Failed to load file {file_path}: {e}")
+                    logger.warning(f"Failed to load file {file_path}: {e}")
 
-        logger.success(f"🎉 Unified Loader: Successfully loaded {len(all_documents)} total raw document blocks.")
+        logger.success(f"Unified Loader: Successfully loaded {len(all_documents)} total raw document blocks.")
         return all_documents
