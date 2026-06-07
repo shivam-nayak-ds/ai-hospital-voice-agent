@@ -1,3 +1,4 @@
+import os
 from config.settings import settings as main_settings
 
 class RAGSettings:
@@ -18,5 +19,11 @@ class RAGSettings:
     # Search settings
     SIMILARITY_THRESHOLD: float = 0.35
     RERANK_THRESHOLD: float = 0.10
+
+    # Offload configuration
+    OFFLOAD_RAG_MODELS: bool = True
+    HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "")
+    TEI_EMBEDDING_URL: str = os.getenv("TEI_EMBEDDING_URL", "")
+    TEI_RERANK_URL: str = os.getenv("TEI_RERANK_URL", "")
 
 rag_settings = RAGSettings()
