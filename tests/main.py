@@ -1,13 +1,13 @@
 import sys
+import asyncio
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from src.agent.multi_agent.swarm import AshaSwarm
+from src.agents.ananya_agent import AshaSwarm
 from src.utils.logger import custom_logger as logger
 
-
-def main():
+async def main():
     logger.info("Asha AI Hospital Agent Session Started.")
     agent = AshaSwarm(user_id="local_test_user")
 
@@ -28,7 +28,7 @@ def main():
                 continue
 
             print(" Asha: ", end="", flush=True)
-            for token in agent.run(user_input):
+            async for token in agent.run(user_input):
                 print(token, end="", flush=True)
 
             print("\n")
@@ -42,5 +42,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
-
+    asyncio.run(main())

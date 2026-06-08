@@ -2,6 +2,7 @@ import os
 import json
 from typing import List
 from src.rag.loaders.documents import Document
+from src.utils.logger import custom_logger as logger
 
 class JSONLoader:
     """
@@ -9,6 +10,7 @@ class JSONLoader:
     """
     def __init__(self, file_path: str):
         self.file_path = file_path
+        logger.info(f"Loading JSON file from: {file_path}")
 
     def load(self) -> List[Document]:
         """
@@ -23,13 +25,11 @@ class JSONLoader:
                 data = json.load(f)
 
             if not isinstance(data, list):
-                # If root is not a list, wrap it to handle it cleanly
                 data = [data]
 
             filename = os.path.basename(self.file_path)
 
             for item in data:
-                # Extract and clean text content
                 question = item.get("question", "").strip()
                 answer = item.get("answer", "").strip()
                 keywords = item.get("keywords", [])
@@ -38,12 +38,10 @@ class JSONLoader:
                 if not question or not answer:
                     continue
 
-                # Standardize format for embedding semantic search
                 page_content = f"Question: {question}\nAnswer: {answer}"
                 if keywords_str:
                     page_content += f"\nKeywords: {keywords_str}"
 
-                # Standardize metadata structure (RAG Audit Compliant)
                 metadata = {
                     "source": filename,
                     "category": item.get("category", "general"),
@@ -55,8 +53,10 @@ class JSONLoader:
                 }
 
                 documents.append(Document(page_content=page_content, metadata=metadata))
+            logger.success(f"Successfully loaded {len(documents)} QA pairs from {filename}")
 
         except Exception as e:
+            logger.error(f"Failed to parse JSON file {self.file_path}: {e}")
             raise ValueError(f"Failed to parse JSON file {self.file_path}: {e}")
 
         return documents

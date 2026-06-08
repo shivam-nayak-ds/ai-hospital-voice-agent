@@ -7,8 +7,7 @@ from typing import Optional, Callable
 
 from src.voice.stt import AshaSTT
 from src.voice.tts import AshaTTS
-from src.agent.multi_agent.swarm import AshaSwarm
-from src.agent.intent_classifier import AshaIntentClassifier
+from src.agents.ananya_agent import AshaSwarm, AshaIntentClassifier
 from src.utils.logger import custom_logger as logger
 from src.voice.voice_quality import filter_transcript, TranscriptDeduplicator, smart_split_sentences, speak_with_intent
 
@@ -138,7 +137,7 @@ class AshaVoiceOrchestrator:
         playback_task = asyncio.create_task(self._playback_worker(audio_queue))
 
         try:
-            for token in self.brain.run(text):
+            async for token in self.brain.run(text):
                 if self._stop_event.is_set():
                     break
 

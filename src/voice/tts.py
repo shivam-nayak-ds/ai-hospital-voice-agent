@@ -81,39 +81,45 @@ class AshaTTS:
         }
 
     async def speak(self, text: str):
-        """Main speak method - routes to correct backend."""
+        """Main speak method - routes to correct backend with fail-safe boundaries."""
         self.should_stop = False
         if not text or not text.strip():
             return
 
         text = self._clean_text(text)
 
-        if self.backend == "edge":
-            await self._play_edge_tts(text)
-        elif self.backend == "google":
-            audio = await asyncio.to_thread(self.engine.generate, text)
-            if audio:
-                await self._play_bytes(audio)
-        elif self.backend == "azure":
-            audio = await asyncio.to_thread(self.engine.generate, text)
-            if audio:
-                await self._play_bytes(audio)
-        elif self.backend == "sarvam":
-            await self._play_sarvam(text)
+        try:
+            if self.backend == "edge":
+                await self._play_edge_tts(text)
+            elif self.backend == "google":
+                audio = await asyncio.to_thread(self.engine.generate, text)
+                if audio:
+                    await self._play_bytes(audio)
+            elif self.backend == "azure":
+                audio = await asyncio.to_thread(self.engine.generate, text)
+                if audio:
+                    await self._play_bytes(audio)
+            elif self.backend == "sarvam":
+                await self._play_sarvam(text)
+        except Exception as e:
+            logger.error(f"TTS backend speaking pipeline failed: {e}")
 
     async def generate_audio(self, text: str) -> bytes:
-        """Returns raw audio bytes (for sending over Twilio WebSocket)."""
+        """Returns raw audio bytes, catching backend/network errors safely."""
         if not text or not text.strip():
             return None
         text = self._clean_text(text)
 
-        if self.backend == "edge":
-            return await self._generate_edge_bytes(text)
-        elif self.backend in ("google", "azure"):
-            return await asyncio.to_thread(self.engine.generate, text)
-        elif self.backend == "sarvam":
-            return await self._get_sarvam_bytes(text)
-        return None
+        try:
+            if self.backend == "edge":
+                return await self._generate_edge_bytes(text)
+            elif self.backend in ("google", "azure"):
+                return await asyncio.to_thread(self.engine.generate, text)
+            elif self.backend == "sarvam":
+                return await self._get_sarvam_bytes(text)
+        except Exception as e:
+            logger.error(f"TTS backend audio generation failed: {e}")
+            return None
 
     # ─── Edge-TTS (Microsoft, Free, Best Quality) ──────────────────────────
 
