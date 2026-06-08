@@ -1,7 +1,7 @@
 import urllib.parse
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
-from contextlib import contextmanager
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
+from contextlib import asynccontextmanager
 from config.settings import settings
 from src.utils.logger import custom_logger as logger
 
@@ -12,14 +12,14 @@ if not db_url:
     password_part = f":{quoted_password}" if quoted_password else ""
     db_url = f"postgresql+psycopg://{settings.DB_USER}{password_part}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
-logger.info(f"Initializing PostgreSQL engine with connection pooling (Pool Size: {settings.DB_POOL_SIZE})")
+logger.info(f"Initializing Async PostgreSQL engine with connection pooling (Pool Size: {settings.DB_POOL_SIZE})")
 
 try:
     # ─── Connection Pooling Strategy ──────────────────────────────────────────
     # pool_pre_ping=True: Automatically checks if a connection is alive before using it
     # pool_recycle=1800: Recycle connections after 30 minutes to prevent memory leaks/timeouts
     # max_overflow=10: Allow up to 10 additional connections beyond the pool size during peak loads
-    engine = create_engine(
+    engine = create_async_engine(
         db_url,
         pool_size=settings.DB_POOL_SIZE,
         max_overflow=10,
@@ -27,27 +27,32 @@ try:
         pool_recycle=1800,
         connect_args={"connect_timeout": settings.DB_CONNECTION_TIMEOUT}
     )
-    logger.success("PostgreSQL engine created successfully.")
+    logger.success("Async PostgreSQL engine created successfully.")
 except Exception as e:
-    logger.error(f"Failed to create PostgreSQL engine: {e}")
+    logger.error(f"Failed to create Async PostgreSQL engine: {e}")
     raise e
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+AsyncSessionLocal = async_sessionmaker(
+    class_=AsyncSession,
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 Base = declarative_base()
 
-@contextmanager
-def get_db():
+@asynccontextmanager
+async def get_db():
     """
-    Context manager for database sessions.
+    Async context manager for database sessions.
     Ensures rollback on exceptions and automatic clean pool release.
     """
-    db = SessionLocal()
+    db = AsyncSessionLocal()
     try:
         yield db
-        db.commit()
+        await db.commit()
     except Exception as e:
-        db.rollback()
+        await db.rollback()
         logger.error(f"Database transaction rolled back due to error: {e}")
         raise e
     finally:
-        db.close()
+        await db.close()

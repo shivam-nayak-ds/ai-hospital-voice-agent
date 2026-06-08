@@ -29,7 +29,7 @@ class Doctor(Base):
     STATUS = Column("STATUS", String, nullable=False, default="Active")  # e.g., Active, On Leave, Inactive
     EMAIL = Column("EMAIL", String, nullable=True)
     PHONE = Column("PHONE", String, nullable=True)
-    DEPARTMENT_ID = Column("DEPARTMENT_ID", Integer, ForeignKey("DEPARTMENTS.ID"), nullable=True)
+    DEPARTMENT_ID = Column("DEPARTMENT_ID", Integer, ForeignKey("DEPARTMENTS.ID"), nullable=False)
 
     # Composite index for fast doctor search queries (NAME + SPECIALIZATION)
     __table_args__ = (
@@ -83,14 +83,14 @@ class Appointment(Base):
     DOCTOR_NAME = Column("DOCTOR_NAME", String, nullable=False)
     APPOINTMENT_TIME = Column("APPOINTMENT_TIME", String, nullable=False)
     APPOINTMENT_DATE = Column("APPOINTMENT_DATE", Date, default=func.current_date(), nullable=False)
-    PATIENT_ID = Column("PATIENT_ID", Integer, ForeignKey("PATIENTS.ID"), nullable=True)
-    DOCTOR_ID = Column("DOCTOR_ID", Integer, ForeignKey("DOCTORS.ID"), nullable=True)
+    PATIENT_ID = Column("PATIENT_ID", Integer, ForeignKey("PATIENTS.ID"), nullable=False)
+    DOCTOR_ID = Column("DOCTOR_ID", Integer, ForeignKey("DOCTORS.ID"), nullable=False)
     STATUS = Column("STATUS", String, nullable=False, default="Confirmed")  # Confirmed, Cancelled
 
     # DB-level unique constraint to prevent double-booking same doctor at same time on same date
     __table_args__ = (
-        UniqueConstraint('DOCTOR_NAME', 'APPOINTMENT_TIME', 'APPOINTMENT_DATE', name='uq_doctor_slot'),
-        Index('idx_appt_doctor_date', 'DOCTOR_NAME', 'APPOINTMENT_DATE'),
+        UniqueConstraint('DOCTOR_ID', 'APPOINTMENT_TIME', 'APPOINTMENT_DATE', name='uq_doctor_slot'),
+        Index('idx_appt_doctor_date', 'DOCTOR_ID', 'APPOINTMENT_DATE'),
     )
 
     # Relationships

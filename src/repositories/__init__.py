@@ -1,0 +1,5 @@
+from src.repositories.doctor_repository import DoctorRepository
+from src.repositories.patient_repository import PatientRepository
+from src.repositories.appointment_repository import AppointmentRepository
+from src.repositories.billing_repository import BillingRepository
+from src.repositories.lab_repository import LabRepository
