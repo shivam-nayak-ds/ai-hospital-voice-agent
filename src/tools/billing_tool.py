@@ -1,20 +1,16 @@
 from src.db.session import get_db
-from src.db.models import BillingCatalog, WardManagement, InsuranceProvider
+from src.services.billing_service import BillingService
+from src.core.domain_exceptions import AshaBaseException
 from src.utils.logger import custom_logger as logger
 
-def get_test_or_procedure_price(item_name: str) -> str:
-    if not item_name or len(item_name.strip()) < 2:
-        return "Please enter at least 2 characters to search prices."
-
+async def get_test_or_procedure_price(item_name: str) -> str:
+    """
+    Retrieves the price for a test or procedure from the billing catalog.
+    """
     try:
-        with get_db() as db:
-            # Enforced limit to prevent OOM / context size issues
-            results = (
-                db.query(BillingCatalog)
-                .filter(BillingCatalog.ITEM_NAME.ilike(f"%{item_name}%"))
-                .limit(10)
-                .all()
-            )
+        async with get_db() as db:
+            service = BillingService(db)
+            results = await service.get_test_or_procedure_price(item_name)
 
             if not results:
                 return (
@@ -32,14 +28,20 @@ def get_test_or_procedure_price(item_name: str) -> str:
             logger.info(f"Billing Tool: Found {len(results)} results for '{item_name}'")
             return "\n".join(lines)
 
+    except AshaBaseException as e:
+        return e.message
     except Exception as e:
         logger.error(f"Billing Tool price error: {e}")
         return "Billing information unavailable. Please try again."
 
-def check_ward_rates() -> str:
+async def check_ward_rates() -> str:
+    """
+    Checks the availability and pricing of hospital wards.
+    """
     try:
-        with get_db() as db:
-            wards = db.query(WardManagement).all()
+        async with get_db() as db:
+            service = BillingService(db)
+            wards = await service.check_ward_rates()
 
             if not wards:
                 return "Ward information is currently unavailable."
@@ -56,28 +58,20 @@ def check_ward_rates() -> str:
             logger.info("Billing Tool: Ward rates fetched successfully")
             return "\n".join(lines)
 
+    except AshaBaseException as e:
+        return e.message
     except Exception as e:
         logger.error(f"Billing Tool ward rates error: {e}")
         return "Ward information unavailable. Please try again."
 
-def check_insurance_cashless(provider_name: str) -> str:
-    if not provider_name or len(provider_name.strip()) < 2:
-        return "Please enter a valid insurance provider name."
-
+async def check_insurance_cashless(provider_name: str) -> str:
+    """
+    Checks if an insurance provider offers cashless network support.
+    """
     try:
-        with get_db() as db:
-            # Look for exact or highly specific matches first
-            provider = (
-                db.query(InsuranceProvider)
-                .filter(InsuranceProvider.NAME.ilike(f"%{provider_name}%"))
-                .first()
-            )
-
-            if not provider:
-                return (
-                    f"'{provider_name}' not found in our network. "
-                    f"Call TPA desk at extension 205 for reimbursement options."
-                )
+        async with get_db() as db:
+            service = BillingService(db)
+            provider = await service.check_insurance_cashless(provider_name)
 
             if provider.CASHLESS_AVAILABLE:
                 helpline = provider.HELPLINE or "Contact billing desk"
@@ -93,6 +87,8 @@ def check_insurance_cashless(provider_name: str) -> str:
                     f"We will provide all necessary documents for your claim."
                 )
 
+    except AshaBaseException as e:
+        return e.message
     except Exception as e:
         logger.error(f"Billing Tool insurance error: {e}")
         return "Insurance information unavailable. Please try again."
