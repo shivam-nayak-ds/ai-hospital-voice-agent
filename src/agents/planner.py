@@ -11,6 +11,7 @@ Includes try-except guards and bound trace logging.
 """
 
 import json
+import re
 from datetime import datetime
 from typing import Dict, Any, Tuple
 from config.settings import settings
@@ -40,19 +41,21 @@ class AshaPlanner:
                 return {}
 
             # Import LLM client helpers locally to avoid circular dependencies
-            from src.agents.ananya_agent import get_groq_client, get_openai_client
+            from src.agents.ananya_agent import get_groq_client, get_gemini_client
             groq_client = get_groq_client()
-            openai_client = get_openai_client()
+            gemini_client = get_gemini_client()
             
             from src.agents.prompts import SYSTEM_ROUTER_PROMPT
             current_date = datetime.now().strftime("%Y-%m-%d")
             prompt = SYSTEM_ROUTER_PROMPT.format(current_date=current_date)
             
-            last_user_message = messages[-1]["content"]
+            from src.utils.message_helper import get_message_content
+            last_user_message = get_message_content(messages[-1])
             intent = "chitchat"
             entities = {}
             
             # 1. Groq (Primary router)
+            groq_success = False
             if groq_client:
                 try:
                     response = groq_client.chat.completions.create(
@@ -67,14 +70,15 @@ class AshaPlanner:
                     intent = data.get("intent", "chitchat")
                     entities = data.get("extracted_entities", {})
                     log.info(f"Groq intent classified as: '{intent}'")
+                    groq_success = True
                 except Exception as e:
                     log.warning(f"Groq NLU extraction failed: {e}")
                     
-            # 2. OpenAI Fallback
-            if intent == "chitchat" and openai_client:
+            # 2. Gemini Fallback
+            if not groq_success and gemini_client:
                 try:
-                    response = openai_client.chat.completions.create(
-                        model="gpt-4o-mini",
+                    response = gemini_client.chat.completions.create(
+                        model=settings.GEMINI_MODEL,
                         messages=[
                             {"role": "system", "content": prompt},
                             {"role": "user", "content": last_user_message}
@@ -84,16 +88,16 @@ class AshaPlanner:
                     data = json.loads(response.choices[0].message.content)
                     intent = data.get("intent", "chitchat")
                     entities = data.get("extracted_entities", {})
-                    log.info(f"OpenAI fallback intent classified as: '{intent}'")
+                    log.info(f"Gemini fallback intent classified as: '{intent}'")
                 except Exception as e:
-                    log.warning(f"OpenAI NLU extraction failed: {e}")
+                    log.warning(f"Gemini NLU extraction failed: {e}")
                     
             # 3. Heuristic Rules (Backup)
-            if not entities and intent == "chitchat":
+            if intent == "chitchat":
                 text_lower = last_user_message.lower()
                 if any(w in text_lower for w in ["book", "appointment", "reserve", "slot"]):
                     intent = "book_appointment"
-                elif any(w in text_lower for w in ["doctor", "specialist", "timings", "schedule"]):
+                elif any(w in text_lower for w in ["doctor", "physician", "practitioner", "timings of dr", "schedule of dr"]):
                     intent = "doctor_search"
                 elif any(w in text_lower for w in ["report", "lab", "test status"]):
                     intent = "lab_report_status"
@@ -101,6 +105,41 @@ class AshaPlanner:
                     intent = "emergency"
                 elif any(w in text_lower for w in ["price", "cost", "billing", "charges"]):
                     intent = "billing_catalog"
+                elif any(w in text_lower for w in ["tell me about", "department", "departments", "specialty", "speciality", "specialties", "address", "location", "where is", "direction", "timing", "timings", "hours", "open", "visiting", "policy", "faq", "question"]):
+                    intent = "faq"
+
+            # 4. Extract 10-digit phone number if missing from LLM extraction
+            if not entities:
+                entities = {}
+            if not entities.get("patient_phone"):
+                phone_match = re.search(r"\b\d{10}\b", last_user_message)
+                if phone_match:
+                    entities["patient_phone"] = phone_match.group(0)
+
+            # 5. Preserve active intent during multi-turn slot filling / OTP verification
+            intent_requirements = {
+                "book_appointment": ["doctor_name", "appointment_date", "appointment_time", "patient_phone"],
+                "check_slot": ["doctor_name", "appointment_date", "appointment_time"],
+                "cancel_appointment": ["appointment_id"],
+                "lab_report_status": ["patient_phone"],
+                "billing_catalog": ["specialization"],
+                "insurance_cashless": ["specialization"]
+            }
+
+            prev_intent = state.get("current_intent")
+            is_otp_verified = state.get("is_otp_verified", False)
+            
+            if prev_intent in intent_requirements:
+                is_secure = prev_intent in ["book_appointment", "cancel_appointment", "lab_report_status"]
+                needs_otp = is_secure and not is_otp_verified
+                
+                # Check if any required slots are still missing
+                req_slots = intent_requirements[prev_intent]
+                missing_slots = any(state.get(slot) is None and entities.get(slot) is None for slot in req_slots)
+                
+                if intent == "chitchat" or needs_otp or missing_slots:
+                    log.info(f"NLU Flow: Preserving active intent '{prev_intent}' (needs_otp={needs_otp}, missing_slots={missing_slots})")
+                    intent = prev_intent
                     
             # Compile state updates
             updates: Dict[str, Any] = {"current_intent": intent}
@@ -175,6 +214,9 @@ class AshaPlanner:
             
         if intent == "chitchat":
             return "chat_node"
+            
+        if intent == "faq":
+            return "rag_node"
             
         if intent in ["billing_catalog", "ward_availability", "insurance_cashless"]:
             return "tools_node" # billing agent
