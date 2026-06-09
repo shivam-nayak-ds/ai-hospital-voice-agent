@@ -20,16 +20,23 @@ class KnowledgeAgent:
     def __init__(self):
         logger.success("KnowledgeAgent initialized.")
 
-    def run(self, query: str, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, query: str, state: Dict[str, Any]) -> Dict[str, Any]:
         session_id = state.get("session_id", "default")
         log = logger.bind(session_id=session_id)
         log.info(f"KnowledgeAgent running RAG query: '{query}'")
         
         try:
             # 1. Retrieve raw search results from hospital knowledge base
-            rag_context = retrieve_hospital_info(query, limit=3)
+            rag_context = await retrieve_hospital_info(query, limit=3)
             
-            if not rag_context or "no relevant hospital policies" in rag_context.lower():
+            if not rag_context or "error" in rag_context.lower() or "unavailable" in rag_context.lower():
+                log.info("KnowledgeAgent: RAG tool failure or empty context. Bypassing LLM generation.")
+                return {
+                    "speech_output": "I am sorry, but I am unable to access the hospital information system at the moment. Please try again later or contact our front desk.",
+                    "next_node": None
+                }
+                
+            if "no relevant hospital policies" in rag_context.lower():
                 log.info("KnowledgeAgent: No RAG context found, fallback warning.")
                 return {
                     "speech_output": "I am sorry, I couldn't find any information on that in our knowledge base. Please call the hospital helpdesk at extension 100 for further assistance.",
@@ -37,12 +44,12 @@ class KnowledgeAgent:
                 }
                 
             # 2. Formulate voice-optimized response using LLM
-            from src.agents.ananya_agent import get_groq_client, get_openai_client
+            from src.agents.ananya_agent import get_groq_client, get_gemini_client
             groq_client = get_groq_client()
-            openai_client = get_openai_client()
+            gemini_client = get_gemini_client()
             
             prompt = (
-                "You are Ananya, a helpful receptionist at City Care Hospital.\n"
+                "You are Ananya, a helpful receptionist at Lifeline Multi-Speciality Hospital.\n"
                 "Your task is to answer the caller's question based strictly on the provided hospital knowledge base context.\n"
                 "Follow these rules:\n"
                 "1. Be extremely concise (under 2 sentences) and voice-friendly.\n"
@@ -68,17 +75,17 @@ class KnowledgeAgent:
                 except Exception as e:
                     log.warning(f"KnowledgeAgent Groq generation failed: {e}")
                     
-            # Try OpenAI fallback
-            if not response_text and openai_client:
+            # Try Gemini fallback
+            if not response_text and gemini_client:
                 try:
-                    response = openai_client.chat.completions.create(
-                        model="gpt-4o-mini",
+                    response = gemini_client.chat.completions.create(
+                        model=settings.GEMINI_MODEL,
                         messages=[{"role": "user", "content": prompt}]
                     )
                     response_text = response.choices[0].message.content.strip()
-                    log.info("KnowledgeAgent OpenAI fallback generated successfully.")
+                    log.info("KnowledgeAgent Gemini fallback generated successfully.")
                 except Exception as e:
-                    log.warning(f"KnowledgeAgent OpenAI generation failed: {e}")
+                    log.warning(f"KnowledgeAgent Gemini generation failed: {e}")
                     
             # Heuristic fallback if both fail
             if not response_text:

@@ -27,11 +27,35 @@ class AshaOperationsAgent:
         session_id = state.get("session_id", "default")
         intent = state.get("current_intent")
         validation_errors = state.get("validation_errors", {})
-        
-        # Bind session context to logger for tracing
         log = logger.bind(session_id=session_id)
         log.info(f"Operations Agent triggered for intent: '{intent}'")
 
+        try:
+            res = await self._execute_operation(state, intent, validation_errors, log)
+            speech = res.get("speech_output", "")
+            if speech:
+                speech_lower = speech.lower()
+                if "unavailable" in speech_lower or "failed" in speech_lower or "error" in speech_lower:
+                    log.warning(f"Operations Agent: Tool failure detected: '{speech}'. Triggering no-hallucination guardrail.")
+                    return {
+                        "speech_output": "I am sorry, I am having trouble accessing our hospital records right now. Please try again shortly.",
+                        "next_node": None
+                    }
+            return res
+        except Exception as e:
+            log.exception(f"Unhandled exception in Operations Agent: {e}")
+            return {
+                "speech_output": "I am having trouble accessing our hospital records right now. Please try again shortly.",
+                "next_node": None
+            }
+
+    async def _execute_operation(
+        self,
+        state: Dict[str, Any],
+        intent: str,
+        validation_errors: Dict[str, str],
+        log
+    ) -> Dict[str, Any]:
         try:
             # ─── 1. Handling Validation Errors First ─────────────────────────────────
             if validation_errors:
