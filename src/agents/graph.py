@@ -18,8 +18,15 @@ from src.agents.response_builder import AshaResponseBuilder
 from src.agents.validator import AshaValidator
 from src.agents.memory import SessionMemoryManager
 
-# Import database and emergency tools
 from src.tools.emergency_tool import handle_emergency
+from src.utils.message_helper import get_message_content
+
+# Reusable agent and helper instances (cached to prevent recreation every turn)
+_planner = AshaPlanner()
+_memory_mgr = SessionMemoryManager()
+_ops_agent = AshaOperationsAgent()
+_knowledge_agent = KnowledgeAgent()
+_response_builder = AshaResponseBuilder()
 
 
 # ─── LangGraph Nodes ──────────────────────────────────────────────────────────
@@ -34,7 +41,7 @@ async def nlu_parser_node(state: AgentState) -> Dict[str, Any]:
     if not messages:
         return {}
 
-    last_user_message = messages[-1]["content"]
+    last_user_message = get_message_content(messages[-1])
     
     # 1. Pre-guardrail: Check input safety
     is_safe, sanitized_or_err = AshaGuardrails.inspect_input(last_user_message)
@@ -45,14 +52,12 @@ async def nlu_parser_node(state: AgentState) -> Dict[str, Any]:
         }
         
     # 2. Prune old history turns to prevent context window bloat
-    memory_mgr = SessionMemoryManager()
-    pruned_msgs = memory_mgr.prune_messages(messages)
+    pruned_msgs = _memory_mgr.prune_messages(messages)
     # Inline update of messages state to prevent accumulating bloated threads
     state["messages"] = pruned_msgs
         
     # 3. Route & extract using Planner NLU
-    planner = AshaPlanner()
-    updates = await planner.run_nlu(state)
+    updates = await _planner.run_nlu(state)
     return updates
 
 
@@ -72,7 +77,7 @@ def otp_verification_node(state: AgentState) -> Dict[str, Any]:
             "next_node": END
         }
         
-    last_user_message = messages[-1]["content"] if messages else ""
+    last_user_message = get_message_content(messages[-1]) if messages else ""
     
     # 2. Trigger OTP if phone is set but not yet texted
     if not otp_sent_to or otp_sent_to != patient_phone:
@@ -122,8 +127,7 @@ async def tools_node(state: AgentState) -> Dict[str, Any]:
     Invokes specific structured tools based on mapped NLU intents.
     """
     logger.info("LangGraph Node: Database Tools Execution (Operations)")
-    ops_agent = AshaOperationsAgent()
-    res = await ops_agent.run(state)
+    res = await _ops_agent.run(state)
     return res
 
 
@@ -134,34 +138,43 @@ def chat_node(state: AgentState) -> Dict[str, Any]:
     logger.info("LangGraph Node: Chat Personas")
     messages = state.get("messages", [])
     
-    from src.agents.ananya_agent import get_groq_client, get_openai_client
+    from src.agents.ananya_agent import get_groq_client, get_gemini_client
+    from src.utils.message_helper import convert_messages_to_dicts
+    
     groq_client = get_groq_client()
-    openai_client = get_openai_client()
+    gemini_client = get_gemini_client()
     
     prompt = SYSTEM_CHAT_PROMPT
     response_text = "Hello! I am Ananya, your virtual hospital assistant. How can I help you today?"
+    
+    # Safely convert conversation history to standard dicts
+    history_dicts = convert_messages_to_dicts(messages[-5:])
+    llm_messages = [{"role": "system", "content": prompt}] + history_dicts
+    
+    groq_success = False
     
     # 1. Try Groq
     if groq_client:
         try:
             response = groq_client.chat.completions.create(
                 model=settings.GROQ_MODEL,
-                messages=[{"role": "system", "content": prompt}] + messages[-5:]
+                messages=llm_messages
             )
             response_text = response.choices[0].message.content
+            groq_success = True
         except Exception as e:
             logger.warning(f"Groq chat response failed: {e}")
             
-    # 2. Try OpenAI Fallback
-    if response_text == "Hello! I am Ananya, your virtual hospital assistant. How can I help you today?" and openai_client:
+    # 2. Try Gemini Fallback
+    if not groq_success and gemini_client:
         try:
-            response = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "system", "content": prompt}] + messages[-5:]
+            response = gemini_client.chat.completions.create(
+                model=settings.GEMINI_MODEL,
+                messages=llm_messages
             )
             response_text = response.choices[0].message.content
         except Exception as e:
-            logger.warning(f"OpenAI chat response failed: {e}")
+            logger.warning(f"Gemini chat response failed: {e}")
             
     return {
         "speech_output": response_text,
@@ -169,16 +182,15 @@ def chat_node(state: AgentState) -> Dict[str, Any]:
     }
 
 
-def rag_node(state: AgentState) -> Dict[str, Any]:
+async def rag_node(state: AgentState) -> Dict[str, Any]:
     """
     Performs vector-based retrieval on hospital policy / FAQ knowledge base.
     """
     logger.info("LangGraph Node: RAG Knowledge Base Retrieval")
     messages = state.get("messages", [])
-    query = messages[-1]["content"] if messages else ""
+    query = get_message_content(messages[-1]) if messages else ""
     
-    knowledge_agent = KnowledgeAgent()
-    res = knowledge_agent.run(query, state)
+    res = await _knowledge_agent.run(query, state)
     return res
 
 
@@ -188,7 +200,7 @@ def emergency_node(state: AgentState) -> Dict[str, Any]:
     """
     logger.info("LangGraph Node: Emergency Gate")
     messages = state.get("messages", [])
-    query = messages[-1]["content"] if messages else ""
+    query = get_message_content(messages[-1]) if messages else ""
     result = handle_emergency(query)
     
     return {
@@ -208,8 +220,7 @@ def formatter_node(state: AgentState) -> Dict[str, Any]:
         return {"next_node": END}
         
     # 1. Speech formatting
-    builder = AshaResponseBuilder()
-    formatted_speech = builder.format_speech(raw_output, session_id=state.get("session_id", "default"))
+    formatted_speech = _response_builder.format_speech(raw_output, session_id=state.get("session_id", "default"))
     
     # 2. Post-guardrail verification
     compliant_speech = AshaGuardrails.inspect_output(formatted_speech)
@@ -223,7 +234,8 @@ def formatter_node(state: AgentState) -> Dict[str, Any]:
 # ─── Routing Functions ────────────────────────────────────────────────────────
 
 def route_graph(state: AgentState) -> str:
-    return state.get("next_node", END)
+    val = state.get("next_node")
+    return val if val else END
 
 
 # ─── Graph Compilation ────────────────────────────────────────────────────────

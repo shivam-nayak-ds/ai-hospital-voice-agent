@@ -9,13 +9,13 @@ to fetch relevant hospital policies, FAQs, and department information.
 from src.rag.retrieval.retriever import get_retriever
 from src.utils.logger import custom_logger as logger
 
-def retrieve_hospital_info(query: str, limit: int = 3) -> str:
+async def retrieve_hospital_info(query: str, limit: int = 3) -> str:
     if not query or len(query.strip()) < 3:
         return "Please provide a valid question to search hospital information."
 
     try:
         retriever = get_retriever()
-        docs = retriever.retrieve(query=query, limit=limit)
+        docs = await retriever.retrieve(query=query, limit=limit)
 
         if not docs:
             logger.info(f"RAG Tool: No information found for '{query}'")
@@ -31,4 +31,4 @@ def retrieve_hospital_info(query: str, limit: int = 3) -> str:
 
     except Exception as e:
         logger.error(f"RAG Tool error: {e}")
-        return "Hospital information lookup unavailable. Please try again."
+        return "Error: Hospital information lookup unavailable."

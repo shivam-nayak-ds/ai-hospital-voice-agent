@@ -61,7 +61,7 @@ class VectorSearcher:
 
         return models.Filter(must=conditions)
 
-    def search_collection(
+    async def search_collection(
         self,
         query: str,
         collection_name: str,
@@ -86,7 +86,7 @@ class VectorSearcher:
             formatted_query = f"{query_prefix}{query.strip()}"
 
             # 2. Embed Query
-            query_vector = self.embedder.embed_text(formatted_query)
+            query_vector = await self.embedder.embed_text(formatted_query)
             if not query_vector:
                 logger.error(f"Failed to generate embedding for query: '{query}'")
                 return []
@@ -129,7 +129,7 @@ class VectorSearcher:
             # Fault-tolerant response: return empty list instead of crashing the process
             return []
 
-    def search_all(
+    async def search_all(
         self,
         query: str,
         limit: int = 5,
@@ -144,7 +144,7 @@ class VectorSearcher:
         
         # Search FAQs if doc_type is FAQ or not specified
         if not doc_type or doc_type == "faq":
-            faq_results = self.search_collection(
+            faq_results = await self.search_collection(
                 query=query,
                 collection_name=rag_settings.FAQ_COLLECTION,
                 limit=limit,
@@ -156,7 +156,7 @@ class VectorSearcher:
 
         # Search Markdown Policies if doc_type is policy/guidelines or not specified
         if not doc_type or doc_type != "faq":
-            md_results = self.search_collection(
+            md_results = await self.search_collection(
                 query=query,
                 collection_name=rag_settings.MARKDOWN_COLLECTION,
                 limit=limit,

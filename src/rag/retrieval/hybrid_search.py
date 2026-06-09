@@ -77,7 +77,7 @@ class HybridRetriever:
 
         return merged_docs
 
-    def retrieve(
+    async def retrieve(
         self,
         query: str,
         limit: int = 3,
@@ -98,7 +98,7 @@ class HybridRetriever:
         
         try:
             # Step 1: Run Dense Vector Search
-            dense_results = self.vector_searcher.search_all(
+            dense_results = await self.vector_searcher.search_all(
                 query=query,
                 limit=candidates_limit,
                 category=category,
@@ -127,7 +127,7 @@ class HybridRetriever:
             # Step 4: Cross-Encoder Reranking
             # Pass top fused candidates to Reranker for exact scoring
             top_fused_candidates = fused_docs[:limit * 3]
-            reranked_docs = self.reranker.rerank(
+            reranked_docs = await self.reranker.rerank(
                 query=query,
                 candidates=top_fused_candidates,
                 limit=limit
