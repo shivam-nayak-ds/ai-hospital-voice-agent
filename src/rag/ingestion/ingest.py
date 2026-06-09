@@ -24,7 +24,7 @@ from src.rag.vectordb.collections import recreate_collection, create_collection
 from src.rag.config.settings import rag_settings
 from src.utils.logger import custom_logger as logger
 
-def ingest_faqs(batch_size: int = 32) -> List[models.PointStruct]:
+async def ingest_faqs(batch_size: int = 32) -> List[models.PointStruct]:
     """
     Orchestrates structured FAQ Ingestion Pipeline.
     Returns list of processed Qdrant PointStruct items.
@@ -67,7 +67,7 @@ def ingest_faqs(batch_size: int = 32) -> List[models.PointStruct]:
         batch_texts = [doc.page_content for doc in batch]
 
         try:
-            vectors = embedder.embed_documents(batch_texts)
+            vectors = await embedder.embed_documents(batch_texts)
             for doc, vector in zip(batch, vectors):
                 faq_id = doc.metadata.get("id", str(uuid.uuid4()))
                 point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, faq_id))
@@ -96,7 +96,7 @@ def ingest_faqs(batch_size: int = 32) -> List[models.PointStruct]:
     
     return points
 
-def ingest_markdown(batch_size: int = 32, force_reload: bool = False) -> List[models.PointStruct]:
+async def ingest_markdown(batch_size: int = 32, force_reload: bool = False) -> List[models.PointStruct]:
     """
     Orchestrates Markdown Ingestion Pipeline:
     1. Scan raw markdown files recursively.
@@ -197,7 +197,7 @@ def ingest_markdown(batch_size: int = 32, force_reload: bool = False) -> List[mo
         batch_texts = [item[1].page_content for item in batch]
         
         try:
-            vectors = embedder.embed_documents(batch_texts)
+            vectors = await embedder.embed_documents(batch_texts)
             for (point_id, chunk), vector in zip(batch, vectors):
                 payload = {
                     "page_content": chunk.page_content,
@@ -289,17 +289,17 @@ def compile_bm25_corpus() -> None:
     except Exception as e:
         logger.error(f"Failed to write BM25 corpus to pickle file: {e}")
 
-def run_full_ingestion():
+async def run_full_ingestion():
     """
     Runner to execute both ingestion pipelines and compile the unified BM25 index.
     """
     logger.info("RUNNING FULL SYSTEM INGESTION PROCESS")
     
     # Run FAQs ingestion
-    ingest_faqs()
+    await ingest_faqs()
     
     # Run Markdown ingestion
-    ingest_markdown(force_reload=False)
+    await ingest_markdown(force_reload=False)
     
     # Compile BM25 index
     compile_bm25_corpus()
@@ -307,4 +307,5 @@ def run_full_ingestion():
     logger.info("FULL SYSTEM INGESTION PROCESS COMPLETED")
 
 if __name__ == "__main__":
-    run_full_ingestion()
+    import asyncio
+    asyncio.run(run_full_ingestion())
