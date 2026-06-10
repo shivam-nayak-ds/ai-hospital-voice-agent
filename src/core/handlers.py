@@ -60,3 +60,12 @@ async def unexpected_exception_handler(request: Request, exc: Exception):
             "request_id": request_id
         }
     )
+
+
+def register_exception_handlers(app):
+    """Binds standard global exception decorators to the FastAPI application instance."""
+    app.add_exception_handler(AshaBaseException, asha_exception_handler)
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(Exception, unexpected_exception_handler)
+

@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = Field(default="llama-3.1-8b-instant")
     GOOGLE_API_KEY: Optional[str] = Field(default=None)
     GEMINI_MODEL: str = Field(default="gemini-1.5-pro")
+    OPENAI_API_KEY: Optional[str] = Field(default=None)
+    OPENAI_MODEL: str = Field(default="gpt-4o-mini")
     EMBEDDING_MODEL_NAME: str = Field(default="all-MiniLM-L6-v2")
     
     # Database Settings
