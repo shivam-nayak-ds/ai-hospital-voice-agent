@@ -19,12 +19,15 @@ def get_groq_client() -> Groq | None:
             logger.warning(f"Failed to initialize Groq client: {e}")
     return None
 
-def get_openai_client() -> OpenAI | None:
-    if settings.OPENAI_API_KEY:
+def get_gemini_client() -> OpenAI | None:
+    if settings.GOOGLE_API_KEY:
         try:
-            return OpenAI(api_key=settings.OPENAI_API_KEY)
+            return OpenAI(
+                api_key=settings.GOOGLE_API_KEY,
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+            )
         except Exception as e:
-            logger.warning(f"Failed to initialize OpenAI client: {e}")
+            logger.warning(f"Failed to initialize Gemini client: {e}")
     return None
 
 
@@ -37,7 +40,7 @@ class AshaIntentClassifier:
     """
     def __init__(self):
         self.groq_client = get_groq_client()
-        self.openai_client = get_openai_client()
+        self.gemini_client = get_gemini_client()
 
     def classify(self, text: str) -> tuple[str, float]:
         """
@@ -63,11 +66,11 @@ class AshaIntentClassifier:
             except Exception as e:
                 logger.warning(f"Groq intent classification failed: {e}")
                 
-        # 2. Try OpenAI (Secondary, fallback)
-        if self.openai_client:
+        # 2. Try Gemini (Secondary, fallback)
+        if self.gemini_client:
             try:
-                response = self.openai_client.chat.completions.create(
-                    model="gpt-4o-mini",
+                response = self.gemini_client.chat.completions.create(
+                    model=settings.GEMINI_MODEL,
                     messages=[
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": text}
@@ -77,7 +80,7 @@ class AshaIntentClassifier:
                 data = json.loads(response.choices[0].message.content)
                 return data.get("intent", "chitchat"), 1.0
             except Exception as e:
-                logger.warning(f"OpenAI intent classification failed: {e}")
+                logger.warning(f"Gemini intent classification failed: {e}")
                 
         # 3. Local Rule Fallback
         text_lower = text.lower()
