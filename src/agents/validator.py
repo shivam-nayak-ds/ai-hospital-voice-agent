@@ -114,6 +114,12 @@ class AshaValidator:
                 matching_doctors = list(result.scalars().all())
                 
                 if not matching_doctors:
+                    # Fallback to fuzzy/phonetic matching (Phase 3 Voice Spelling Tolerance)
+                    from src.repositories.doctor_repository import DoctorRepository
+                    repo = DoctorRepository(db)
+                    matching_doctors = await repo.get_by_name_fuzzy(clean_name, threshold=3)
+
+                if not matching_doctors:
                     return False, None, f"Dr. {doctor_name} was not found in our directory or is currently inactive.", []
                     
                 if len(matching_doctors) > 1:
@@ -128,3 +134,4 @@ class AshaValidator:
         except Exception as e:
             logger.error(f"Validator Doctor search error: {e}")
             return False, None, "We encountered an issue checking the doctor directory. Please try again.", []
+
