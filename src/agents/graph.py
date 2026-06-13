@@ -131,10 +131,12 @@ async def tools_node(state: AgentState) -> Dict[str, Any]:
     return res
 
 
-def chat_node(state: AgentState) -> Dict[str, Any]:
+async def chat_node(state: AgentState) -> Dict[str, Any]:
     """
     Handles friendly greeting and general chitchat conversation.
+    Async to prevent blocking the event loop during LLM API calls.
     """
+    import asyncio
     logger.info("LangGraph Node: Chat Personas")
     messages = state.get("messages", [])
     
@@ -153,10 +155,11 @@ def chat_node(state: AgentState) -> Dict[str, Any]:
     
     groq_success = False
     
-    # 1. Try Groq
+    # 1. Try Groq — wrapped in asyncio.to_thread so the sync SDK doesn't block the loop
     if groq_client:
         try:
-            response = groq_client.chat.completions.create(
+            response = await asyncio.to_thread(
+                groq_client.chat.completions.create,
                 model=settings.GROQ_MODEL,
                 messages=llm_messages
             )
@@ -168,7 +171,8 @@ def chat_node(state: AgentState) -> Dict[str, Any]:
     # 2. Try Gemini Fallback
     if not groq_success and gemini_client:
         try:
-            response = gemini_client.chat.completions.create(
+            response = await asyncio.to_thread(
+                gemini_client.chat.completions.create,
                 model=settings.GEMINI_MODEL,
                 messages=llm_messages
             )
