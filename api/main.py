@@ -7,6 +7,7 @@ from api.routes.health import router as health_router
 from api.routes.chat import router as chat_router
 from api.routes.twilio_voice import router as twilio_router
 from src.core.handlers import register_exception_handlers
+from src.core.middleware.rate_limit import RedisRateLimitMiddleware
 from src.utils.logger import custom_logger as logger
 
 # Initialize FastAPI App
@@ -26,6 +27,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Bind Redis Rate Limiter Middleware (Phase 7)
+app.add_middleware(RedisRateLimitMiddleware, limit=30, window=60)
+
 
 # Register Global Exception Handlers
 register_exception_handlers(app)
