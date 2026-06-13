@@ -29,6 +29,8 @@ class AshaVoiceOrchestrator:
     def __init__(self, output_callback: Optional[Callable] = None, user_id: str = "default_user"):
         logger.info(f"Initializing Async ASHA Voice Orchestrator for {user_id}...")
         self.brain = AshaSwarm(user_id=user_id)
+        # Classifier is kept only for TTS prosody (SSML rate/pitch selection).
+        # Full intent routing is done inside LangGraph via the Planner NLU node.
         self.classifier = AshaIntentClassifier()
         self.tts = AshaTTS()
 
@@ -104,15 +106,21 @@ class AshaVoiceOrchestrator:
     # ─── Processing Pipeline ────────────────────────────────────────────────
 
     async def _process_and_respond(self, text: str):
-        """Async Pipeline: Intent -> Brain -> TTS."""
+        """Async Pipeline: Brain (LangGraph) -> TTS.
+        
+        Intent classification is handled inside LangGraph by the Planner NLU node.
+        Here we run a lightweight local rule-check ONLY to determine TTS prosody (SSML),
+        which must happen before the first audio byte is sent.
+        """
         try:
             self.state = VoiceState.THINKING
-            
-            # 1. Intent Classification (Make it async if possible, currently sync)
-            intent, score = self.classifier.classify(text)
-            logger.info(f"[INTENT]: {intent} (score={score:.2f})")
 
-            # 2. Generate & Stream Response
+            # Lightweight local intent check — used ONLY for TTS prosody (SSML rate/pitch).
+            # The full LLM-based classification happens inside graph.ainvoke via the Planner node.
+            intent, _ = self.classifier.classify(text)
+            logger.info(f"[PROSODY INTENT]: {intent} (local rule-check for SSML only)")
+
+            # Generate & Stream Response via LangGraph
             self.state = VoiceState.SPEAKING
             await self._stream_response(text, intent)
             

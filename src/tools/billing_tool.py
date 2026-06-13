@@ -46,7 +46,7 @@ async def check_ward_rates() -> str:
             if not wards:
                 return "Ward information is currently unavailable."
 
-            lines = ["Ward Availability and Rates at City Care Hospital:\n"]
+            lines = ["Ward Availability and Rates at Lifeline Multi-Speciality Hospital:\n"]
             for ward in wards:
                 available_beds = ward.TOTAL_BEDS - ward.OCCUPIED_BEDS
                 status = "Available" if available_beds > 0 else "Full"
@@ -82,7 +82,7 @@ async def check_insurance_cashless(provider_name: str) -> str:
                 )
             else:
                 return (
-                    f"{provider.NAME} does not have cashless tie-up with City Care Hospital. "
+                    f"{provider.NAME} does not have cashless tie-up with Lifeline Multi-Speciality Hospital. "
                     f"You can get reimbursement after settling the bill. "
                     f"We will provide all necessary documents for your claim."
                 )

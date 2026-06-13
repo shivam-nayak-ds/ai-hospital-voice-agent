@@ -8,6 +8,8 @@ Prevents context window overflow while maintaining relevant context across multi
 from typing import List, Dict, Any
 from src.utils.logger import custom_logger as logger
 
+from src.utils.message_helper import get_message_role
+
 class SessionMemoryManager:
     """
     Manages short-term conversational history pruning and session context cache.
@@ -16,7 +18,7 @@ class SessionMemoryManager:
         self.max_history_turns = max_history_turns
         logger.info(f"SessionMemoryManager initialized with max_history_turns={max_history_turns}")
 
-    def prune_messages(self, messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def prune_messages(self, messages: List[Any]) -> List[Any]:
         """
         Prunes the list of messages to ensure we only keep the system prompt 
         and the last N active conversation turns (user/assistant exchanges).
@@ -24,8 +26,8 @@ class SessionMemoryManager:
         if not messages:
             return []
             
-        system_messages = [msg for msg in messages if msg.get("role") == "system"]
-        chat_messages = [msg for msg in messages if msg.get("role") in ["user", "assistant"]]
+        system_messages = [msg for msg in messages if get_message_role(msg) == "system"]
+        chat_messages = [msg for msg in messages if get_message_role(msg) in ["user", "assistant"]]
         
         # Max turns * 2 (user + assistant per turn)
         cutoff = self.max_history_turns * 2

@@ -1,3 +1,4 @@
+import os
 from typing import List
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 from src.utils.logger import custom_logger as logger
@@ -110,5 +111,3 @@ class MarkdownChunker:
         
         logger.info(f"Chunker: Created {len(all_chunks)} chunks from {len(docs)} source documents.")
         return all_chunks
-
-import os

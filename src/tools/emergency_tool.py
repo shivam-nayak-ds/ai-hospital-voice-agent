@@ -20,7 +20,7 @@ KEYWORD_RESPONSES = {
     "accident": (
         "For accident victims, call 108 immediately. Do not move the patient unnecessarily. "
         "Apply pressure to visible bleeding wounds with a clean cloth. "
-        "Our trauma team at City Care ER is on standby 24/7."
+        "Our trauma team at Lifeline ER is on standby 24/7."
     ),
     "unconscious": (
         "If the patient is unconscious, check for breathing. "
@@ -35,7 +35,7 @@ KEYWORD_RESPONSES = {
     "breathing": (
         "Breathing difficulty can be serious. Call 108 immediately. "
         "Keep the patient seated upright. Loosen any tight clothing around neck and chest. "
-        "Our Pulmonology Emergency is available at City Care Hospital."
+        "Our Pulmonology Emergency is available at Lifeline Multi-Speciality Hospital."
     ),
     "stroke": (
         "Possible stroke detected. Call 108 immediately. "
@@ -80,7 +80,7 @@ def get_emergency_contacts() -> str:
         "fire": "Fire Department",
         "women_helpline": "Women's Helpline",
     }
-    lines = ["Emergency Contacts at City Care Hospital:\n"]
+    lines = ["Emergency Contacts at Lifeline Multi-Speciality Hospital:\n"]
     for key, label in labels.items():
         lines.append(f"  - {label}: {EMERGENCY_CONTACTS[key]}")
     return "\n".join(lines)

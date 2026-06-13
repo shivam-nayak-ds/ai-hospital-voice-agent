@@ -17,7 +17,7 @@ class QdrantClientWrapper:
         self._client = None
         self._async_client = None
 
-    def get_client(self, retries: int = 3, delay: float = 2.0) -> QdrantClient:
+    def get_client(self, retries: int = 2, delay: float = 0.5) -> QdrantClient:
         """
         Connects to Qdrant server with retries. Returns QdrantClient instance.
         """

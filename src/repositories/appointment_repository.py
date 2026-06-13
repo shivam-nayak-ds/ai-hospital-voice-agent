@@ -45,6 +45,7 @@ class AppointmentRepository:
         await self.db.flush()  # Populate appt.ID
         return appt
 
-    def cancel(self, appointment: Appointment) -> None:
-        """Sets the status of an appointment to Cancelled."""
+    async def cancel(self, appointment: Appointment) -> None:
+        """Sets the status of an appointment to Cancelled and flushes to the DB session."""
         appointment.STATUS = "Cancelled"
+        await self.db.flush()  # Persist the status change within the current transaction

@@ -73,7 +73,7 @@ class AshaTTS:
 
         # Pronunciation fixes for medical terms
         self.word_fixes = {
-            'city care hospital': 'City Care Hospital',
+            'lifeline multi-speciality hospital': 'Lifeline Multi-Speciality Hospital',
             'doctor': 'doctor',
             'appointment': 'appointment',
             'emergency': 'emergency',

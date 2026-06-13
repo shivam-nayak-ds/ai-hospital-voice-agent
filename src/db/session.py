@@ -1,9 +1,14 @@
 import urllib.parse
+import sys
+import asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 from contextlib import asynccontextmanager
 from config.settings import settings
 from src.utils.logger import custom_logger as logger
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Build dynamic PostgreSQL URL if not already defined (ensures settings is loaded)
 db_url = settings.DATABASE_URL

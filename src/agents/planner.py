@@ -12,6 +12,7 @@ Includes try-except guards and bound trace logging.
 
 import json
 import re
+import asyncio
 from datetime import datetime
 from typing import Dict, Any, Tuple
 from config.settings import settings
@@ -58,7 +59,8 @@ class AshaPlanner:
             groq_success = False
             if groq_client:
                 try:
-                    response = groq_client.chat.completions.create(
+                    response = await asyncio.to_thread(
+                        groq_client.chat.completions.create,
                         model=settings.GROQ_MODEL,
                         messages=[
                             {"role": "system", "content": prompt},
@@ -77,7 +79,8 @@ class AshaPlanner:
             # 2. Gemini Fallback
             if not groq_success and gemini_client:
                 try:
-                    response = gemini_client.chat.completions.create(
+                    response = await asyncio.to_thread(
+                        gemini_client.chat.completions.create,
                         model=settings.GEMINI_MODEL,
                         messages=[
                             {"role": "system", "content": prompt},

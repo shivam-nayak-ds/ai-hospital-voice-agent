@@ -8,6 +8,7 @@ Includes try-except guards and session bound logging.
 """
 
 from typing import Dict, Any
+import asyncio
 from config.settings import settings
 from src.utils.logger import custom_logger as logger
 from src.tools.rag_tool import retrieve_hospital_info
@@ -66,7 +67,8 @@ class KnowledgeAgent:
             # Try Groq
             if groq_client:
                 try:
-                    response = groq_client.chat.completions.create(
+                    response = await asyncio.to_thread(
+                        groq_client.chat.completions.create,
                         model=settings.GROQ_MODEL,
                         messages=[{"role": "user", "content": prompt}]
                     )
@@ -78,7 +80,8 @@ class KnowledgeAgent:
             # Try Gemini fallback
             if not response_text and gemini_client:
                 try:
-                    response = gemini_client.chat.completions.create(
+                    response = await asyncio.to_thread(
+                        gemini_client.chat.completions.create,
                         model=settings.GEMINI_MODEL,
                         messages=[{"role": "user", "content": prompt}]
                     )

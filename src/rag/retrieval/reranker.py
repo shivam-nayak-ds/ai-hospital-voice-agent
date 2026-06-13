@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 from typing import List, Optional
 from sentence_transformers import CrossEncoder
@@ -22,6 +23,10 @@ class CrossEncoderReranker:
         """
         if self.model is not None:
             return
+        # Force offline mode to use cached model (avoids SSL/network issues)
+        import os
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
         logger.info(f"Loading local Cross-Encoder reranker as fallback: {self.model_name}...")
         try:
             self.model = CrossEncoder(self.model_name)
@@ -109,7 +114,8 @@ class CrossEncoderReranker:
             try:
                 self._load_local_model()
                 pairs = [[query.strip(), t] for t in texts]
-                local_scores = self.model.predict(pairs)
+                # Wrap sync CrossEncoder.predict in asyncio.to_thread
+                local_scores = await asyncio.to_thread(self.model.predict, pairs)
                 scores = [float(s) for s in local_scores]
             except Exception as e:
                 logger.error(f"Error during fallback Cross-Encoder reranking: {e}.")

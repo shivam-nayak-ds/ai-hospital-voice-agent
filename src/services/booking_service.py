@@ -120,9 +120,36 @@ class BookingService:
                 appt_time=schema.appointment_time
             )
             logger.info(f"Booked Appointment ID {appt.ID}: {patient.NAME} with Dr. {doctor.NAME}")
+            
+            # Resolve department location for address info
+            from src.db.models import Department
+            from sqlalchemy import select
+            location = "Main Clinic"
+            if doctor.DEPARTMENT_ID:
+                stmt = select(Department.LOCATION).where(Department.ID == doctor.DEPARTMENT_ID)
+                loc_result = await self.db.execute(stmt)
+                loc_val = loc_result.scalar_one_or_none()
+                if loc_val:
+                    location = loc_val
+
+            # Trigger Asynchronous Notification (Phase 5/6 Email + PDF Attachment)
+            if patient.EMAIL:
+                from src.services.notification_service import NotificationService
+                await NotificationService.send_booking_email(
+                    to_email=patient.EMAIL,
+                    patient_name=patient.NAME,
+                    doctor_name=doctor.NAME,
+                    date_str=schema.appointment_date,
+                    time_str=schema.appointment_time,
+                    location=location,
+                    appointment_id=appt.ID
+                )
+
             return (
                 f"Appointment confirmed! ID: {appt.ID} | Patient: {patient.NAME} | "
-                f"Doctor: Dr. {doctor.NAME} | Date: {schema.appointment_date} | Time: {schema.appointment_time}. "
+                f"Doctor: Dr. {doctor.NAME} ({doctor.SPECIALIZATION}) | "
+                f"Date: {schema.appointment_date} | Time: {schema.appointment_time} | "
+                f"Location: {location}. "
                 f"Please arrive 15 minutes early."
             )
         except Exception as e:
@@ -149,7 +176,24 @@ class BookingService:
         if appt.STATUS == "Cancelled":
             return f"Appointment ID {schema.appointment_id} is already cancelled."
 
-        self.appointment_repo.cancel(appt)
+        await self.appointment_repo.cancel(appt)
+
+        # Trigger Cancellation Notification (Phase 5 Email)
+        try:
+            patient = await self.patient_repo.get_by_id(appt.PATIENT_ID)
+            if patient and patient.EMAIL:
+                from src.services.notification_service import NotificationService
+                await NotificationService.send_cancellation_email(
+                    to_email=patient.EMAIL,
+                    patient_name=patient.NAME,
+                    doctor_name=appt.DOCTOR_NAME,
+                    date_str=str(appt.APPOINTMENT_DATE),
+                    time_str=appt.APPOINTMENT_TIME,
+                    appointment_id=appt.ID
+                )
+        except Exception as ex:
+            logger.error(f"Failed to trigger cancellation notification: {ex}")
+
         return (
             f"Appointment ID {schema.appointment_id} with Dr. {appt.DOCTOR_NAME} on {appt.APPOINTMENT_DATE} "
             f"at {appt.APPOINTMENT_TIME} has been cancelled successfully."

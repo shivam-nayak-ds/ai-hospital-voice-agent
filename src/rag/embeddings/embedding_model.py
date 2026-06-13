@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 from typing import List, Optional
 from src.utils.logger import custom_logger as logger
@@ -15,6 +16,10 @@ class EmbeddingModel:
     def _load_local_model(self) -> None:
         if self.model is not None:
             return
+        # Force offline mode to use cached model (avoids SSL/network issues)
+        import os
+        os.environ.setdefault("HF_HUB_OFFLINE", "1")
+        os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
         from sentence_transformers import SentenceTransformer
         logger.info(f"Loading local SentenceTransformer model as fallback: {self.model_name}...")
         try:
@@ -71,7 +76,10 @@ class EmbeddingModel:
         self._load_local_model()
         try:
             # Running local sentence transformer encoding (CPU-bound)
-            embedding = self.model.encode(text, convert_to_numpy=True)
+            # Wrap in asyncio.to_thread to avoid blocking the event loop
+            embedding = await asyncio.to_thread(
+                self.model.encode, text, convert_to_numpy=True
+            )
             return embedding.tolist()
         except Exception as e:
             logger.error(f"Failed to generate local embedding: {e}")
@@ -93,7 +101,10 @@ class EmbeddingModel:
         # Fallback to local SentenceTransformer
         self._load_local_model()
         try:
-            embeddings = self.model.encode(texts, show_progress_bar=False, convert_to_numpy=True)
+            # Wrap CPU-bound encode in asyncio.to_thread
+            embeddings = await asyncio.to_thread(
+                self.model.encode, texts, show_progress_bar=False, convert_to_numpy=True
+            )
             return embeddings.tolist()
         except Exception as e:
             logger.error(f"Failed to generate local batch embeddings: {e}")

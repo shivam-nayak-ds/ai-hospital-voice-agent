@@ -52,8 +52,16 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
     ENABLE_PII_MASKING: bool = Field(default=True)
 
+    # SMTP Settings for Email Notifications
+    SMTP_HOST: str = Field(default="smtp.gmail.com")
+    SMTP_PORT: int = Field(default=587, ge=1, le=65535)
+    SMTP_USER: Optional[str] = Field(default=None)
+    SMTP_PASSWORD: Optional[str] = Field(default=None)
+    SMTP_FROM: str = Field(default="lifeline-hospital@domain.com")
+
     # Runtime files
     TTS_TEMP_FILE: str = Field(default="static/temp_voice.mp3")
+
 
     @property
     def cors_origins_list(self) -> List[str]:

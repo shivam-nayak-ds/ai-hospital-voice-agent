@@ -14,15 +14,23 @@ class HybridRetriever:
     2. Merges candidate outputs using Reciprocal Rank Fusion (RRF) with k=60.
     3. Reranks the top merged candidates using BGE Cross-Encoder weights.
     4. Filters out irrelevant documents below threshold.
+
+    Fault-tolerant: if Qdrant is unavailable, gracefully degrades to BM25-only search.
     """
     def __init__(self):
+        # VectorSearcher depends on Qdrant — may fail if Qdrant is not running.
+        # We catch the error so BM25 + reranker can still operate standalone.
         try:
             self.vector_searcher = VectorSearcher()
-            self.bm25_searcher = BM25Searcher()
-            self.reranker = CrossEncoderReranker()
         except Exception as e:
-            logger.critical(f"HybridRetriever initialization failed: {e}")
-            raise e
+            logger.warning(
+                f"VectorSearcher unavailable (Qdrant likely not running): {e}. "
+                "Falling back to BM25-only retrieval."
+            )
+            self.vector_searcher = None
+
+        self.bm25_searcher = BM25Searcher()
+        self.reranker = CrossEncoderReranker()
 
     def _get_doc_key(self, doc: Document) -> str:
         """
@@ -97,14 +105,18 @@ class HybridRetriever:
         candidates_limit = limit * candidate_multiplier
         
         try:
-            # Step 1: Run Dense Vector Search
-            dense_results = await self.vector_searcher.search_all(
-                query=query,
-                limit=candidates_limit,
-                category=category,
-                department=department,
-                doc_type=doc_type
-            )
+            # Step 1: Run Dense Vector Search (skip gracefully if Qdrant is down)
+            if self.vector_searcher is not None:
+                dense_results = await self.vector_searcher.search_all(
+                    query=query,
+                    limit=candidates_limit,
+                    category=category,
+                    department=department,
+                    doc_type=doc_type
+                )
+            else:
+                dense_results = []
+                logger.debug("Dense search skipped — VectorSearcher not available.")
 
             # Step 2: Run Sparse BM25 Search
             sparse_results = self.bm25_searcher.search(

@@ -33,9 +33,9 @@ class AshaResponseBuilder:
             clean_text = re.sub(r'[*#_`\[\]\(\)]', '', raw_text)
             
             # 1. Try LLM formatting first
-            from src.agents.ananya_agent import get_groq_client, get_openai_client
+            from src.agents.ananya_agent import get_groq_client, get_gemini_client
             groq_client = get_groq_client()
-            openai_client = get_openai_client()
+            gemini_client = get_gemini_client()
             
             from src.agents.prompts import SPEECH_FORMATTER_PROMPT
             
@@ -55,19 +55,19 @@ class AshaResponseBuilder:
                 except Exception as e:
                     log.warning(f"Groq speech formatter failed: {e}")
                     
-            if not formatted_speech and openai_client:
+            if not formatted_speech and gemini_client:
                 try:
-                    response = openai_client.chat.completions.create(
-                        model="gpt-4o-mini",
+                    response = gemini_client.chat.completions.create(
+                        model=settings.GEMINI_MODEL,
                         messages=[
                             {"role": "system", "content": SPEECH_FORMATTER_PROMPT},
                             {"role": "user", "content": clean_text}
                         ]
                     )
                     formatted_speech = response.choices[0].message.content.strip()
-                    log.info("Speech formatted successfully via OpenAI fallback.")
+                    log.info("Speech formatted successfully via Gemini fallback.")
                 except Exception as e:
-                    log.warning(f"OpenAI speech formatter failed: {e}")
+                    log.warning(f"Gemini speech formatter failed: {e}")
 
             # If LLM failed, fallback to local heuristic regex replacements
             if not formatted_speech:

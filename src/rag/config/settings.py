@@ -21,7 +21,9 @@ class RAGSettings:
     RERANK_THRESHOLD: float = 0.10
 
     # Offload configuration
-    OFFLOAD_RAG_MODELS: bool = True
+    # Only offload to API if TEI endpoints or HF token are actually set.
+    # Falls back to local SentenceTransformer / CrossEncoder otherwise.
+    OFFLOAD_RAG_MODELS: bool = bool(os.getenv("TEI_EMBEDDING_URL") or os.getenv("TEI_RERANK_URL") or os.getenv("HF_API_TOKEN"))
     HF_API_TOKEN: str = os.getenv("HF_API_TOKEN", "")
     TEI_EMBEDDING_URL: str = os.getenv("TEI_EMBEDDING_URL", "")
     TEI_RERANK_URL: str = os.getenv("TEI_RERANK_URL", "")

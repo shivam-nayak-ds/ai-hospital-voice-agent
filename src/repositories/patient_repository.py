@@ -16,9 +16,16 @@ class PatientRepository:
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
+    async def get_by_id(self, patient_id: int) -> Optional[Patient]:
+        """Fetches a patient record matching the exact primary key ID."""
+        stmt = select(Patient).filter(Patient.ID == patient_id)
+        result = await self.db.execute(stmt)
+        return result.scalars().first()
+
     async def create(self, name: str, phone: str) -> Patient:
         """Registers a new patient profile in the database."""
         patient = Patient(NAME=name, PHONE=phone)
         self.db.add(patient)
         await self.db.flush()  # Populate patient.ID
         return patient
+

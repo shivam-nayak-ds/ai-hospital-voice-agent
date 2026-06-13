@@ -1,4 +1,5 @@
 from typing import List, Optional, Dict, Any
+import asyncio
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
@@ -95,7 +96,9 @@ class VectorSearcher:
             qdrant_filter = self._build_filter(category, department, doc_type)
 
             # 4. Execute Search via query_points API (Standard in qdrant-client v1.10+)
-            response = self.client.query_points(
+            # Wrap sync Qdrant client call in asyncio.to_thread to avoid blocking the event loop
+            response = await asyncio.to_thread(
+                self.client.query_points,
                 collection_name=collection_name,
                 query=query_vector,
                 query_filter=qdrant_filter,
