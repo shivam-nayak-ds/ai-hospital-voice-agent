@@ -62,6 +62,11 @@ class Settings(BaseSettings):
     # Runtime files
     TTS_TEMP_FILE: str = Field(default="static/temp_voice.mp3")
 
+    # LiveKit: Browser-based voice calls
+    LIVEKIT_URL: Optional[str] = Field(default=None)
+    LIVEKIT_API_KEY: Optional[str] = Field(default=None)
+    LIVEKIT_API_SECRET: Optional[str] = Field(default=None)
+
 
     @property
     def cors_origins_list(self) -> List[str]:
