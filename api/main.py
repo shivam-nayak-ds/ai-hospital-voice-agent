@@ -1,11 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from config.settings import settings
 from api.routes.health import router as health_router
 from api.routes.chat import router as chat_router
 from api.routes.twilio_voice import router as twilio_router
+from api.routes.livekit_voice import router as livekit_router
 from src.core.handlers import register_exception_handlers
 from src.core.middleware.rate_limit import RedisRateLimitMiddleware
 from src.utils.logger import custom_logger as logger
@@ -39,6 +41,10 @@ register_exception_handlers(app)
 app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(twilio_router)
+app.include_router(livekit_router)
+
+# Mount static files for browser UI (LiveKit demo, etc.)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/", summary="Root Welcome Endpoint")
