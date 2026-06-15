@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lifeline Hospital - Voice Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            color: #38bdf8;
+            margin-bottom: 0.25rem;
+        }
+        .header p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 1rem;
+        }
+        /* Status Badge */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #64748b;
+            transition: background 0.3s;
+        }
+        .status-dot.connected { background: #22c55e; animation: pulse 2s infinite; }
+        .status-dot.thinking { background: #f59e0b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .status-text { font-size: 0.85rem; color: #94a3b8; }
+
+        /* Call Button */
+        .call-section { text-align: center; margin-bottom: 2rem; }
+        .call-btn {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            border: 3px solid #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .call-btn:hover { background: rgba(56, 189, 248, 0.2); transform: scale(1.05); }
+        .call-btn.active {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            animation: ring 1.5s ease-in-out infinite;
+        }
+        @keyframes ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+        }
+        .call-label {
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        /* Transcript Area */
+        .transcript-section {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 1.25rem;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .transcript-section h3 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            margin-bottom: 0.75rem;
+        }
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .message.user {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 3px solid #38bdf8;
+        }
+        .message.assistant {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid #22c55e;
+        }
+        .message .role {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+        .message.user .role { color: #38bdf8; }
+        .message.assistant .role { color: #22c55e; }
+        .message .text { color: #cbd5e1; }
+
+        /* Visualizer */
+        .visualizer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 30px;
+            margin: 1rem 0;
+        }
+        .visualizer .bar {
+            width: 4px;
+            background: #38bdf8;
+            border-radius: 2px;
+            transition: height 0.1s;
+        }
+        .visualizer.inactive .bar { height: 4px !important; background: #334155; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 1rem;
+            color: #475569;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Lifeline Hospital</h1>
+        <p>Voice Assistant — Browser Demo (LiveKit)</p>
+    </div>
+
+    <div class="container">
+        <div class="status-bar">
+            <div class="status-dot" id="statusDot"></div>
+            <span class="status-text" id="statusText">Disconnected</span>
+        </div>
+
+        <div class="call-section">
+            <button class="call-btn" id="callBtn" onclick="toggleCall()">&#x1F3A4;</button>
+            <div class="call-label" id="callLabel">Tap to start voice call</div>
+        </div>
+
+        <div class="visualizer inactive" id="visualizer">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+
+        <div class="transcript-section" id="transcriptArea">
+            <h3>Conversation</h3>
+            <div id="transcript"></div>
+        </div>
+    </div>
+
+    <div class="footer">Powered by LiveKit + Deepgram + Edge TTS</div>
+
+    <!-- LiveKit Client SDK from CDN -->
+    <script src="https://unpkg.com/livekit-client@2.5.0/dist/livekit-client.umd.min.js"></script>
+    <script src="livekit.js"></script>
+</body>
+</html>
