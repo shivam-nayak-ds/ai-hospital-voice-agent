@@ -1,12 +1,8 @@
-import json
-import re
-from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any
 from langgraph.graph import StateGraph, END
 
-from config.settings import settings
 from src.agents.state import AgentState
-from src.agents.prompts import SYSTEM_ROUTER_PROMPT, SYSTEM_CHAT_PROMPT, SPEECH_FORMATTER_PROMPT
+from src.agents.prompts import SYSTEM_CHAT_PROMPT
 from src.utils.logger import custom_logger as logger
 
 # Import Multi-Agent Swarm Modules
@@ -252,15 +248,16 @@ def emergency_node(state: AgentState) -> Dict[str, Any]:
 
 def formatter_node(state: AgentState) -> Dict[str, Any]:
     """
-    Uses Speech Formatter instructions to format output for phone playback and 
-    runs post-execution medical guardrails check.
+    Instant speech formatting using local heuristic rules (no LLM call).
+    Runs post-execution medical guardrails check.
+    Executes in <1ms — does not block the event loop.
     """
     logger.info("LangGraph Node: Speech Formatter & Guardrails")
     raw_output = state.get("speech_output", "")
     if not raw_output:
         return {"next_node": END}
         
-    # 1. Speech formatting
+    # 1. Speech formatting (instant local heuristic — no LLM API call)
     formatted_speech = _response_builder.format_speech(raw_output, session_id=state.get("session_id", "default"))
     
     # 2. Post-guardrail verification

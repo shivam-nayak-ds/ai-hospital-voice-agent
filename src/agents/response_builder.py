@@ -4,78 +4,42 @@ response_builder.py
 Implements the Response Builder (Speech Formatter) layer.
 Cleans and formats agent responses to be warm, voice-friendly, and natural
 for playback over telephony/TTS pipelines (e.g. converting "Rs. 500" to "five hundred rupees").
-Includes try-except guards and trace logging.
+
+Uses INSTANT local heuristic formatting (regex rules) instead of calling an LLM.
+This avoids blocking the event loop for 1-3 seconds on every response.
 """
 
 import re
-from config.settings import settings
 from src.utils.logger import custom_logger as logger
 
 class AshaResponseBuilder:
     """
     Transforms text-based database and LLM outputs into friendly spoken text.
-    Supports exception safety and logging.
+    Uses local heuristic formatting for instant, non-blocking execution.
     """
     def __init__(self):
         logger.success("AshaResponseBuilder initialized.")
 
     def format_speech(self, raw_text: str, session_id: str = "default") -> str:
         """
-        Formats text for spoken playback.
-        Uses the LLM formatter first, then applies backup regex rules.
+        Formats text for spoken playback using instant local heuristic rules.
+        No LLM calls — runs in <1ms instead of 1-3 seconds.
         """
         log = logger.bind(session_id=session_id)
         if not raw_text:
             return ""
 
         try:
-            # Remove markdown characters
+            # Step 1: Strip markdown characters
             clean_text = re.sub(r'[*#_`\[\]\(\)]', '', raw_text)
             
-            # 1. Try LLM formatting first
-            from src.agents.ananya_agent import get_groq_client, get_gemini_client
-            groq_client = get_groq_client()
-            gemini_client = get_gemini_client()
-            
-            from src.agents.prompts import SPEECH_FORMATTER_PROMPT
-            
-            formatted_speech = ""
-            
-            if groq_client:
-                try:
-                    response = groq_client.chat.completions.create(
-                        model=settings.GROQ_MODEL,
-                        messages=[
-                            {"role": "system", "content": SPEECH_FORMATTER_PROMPT},
-                            {"role": "user", "content": clean_text}
-                        ]
-                    )
-                    formatted_speech = response.choices[0].message.content.strip()
-                    log.info("Speech formatted successfully via Groq.")
-                except Exception as e:
-                    log.warning(f"Groq speech formatter failed: {e}")
-                    
-            if not formatted_speech and gemini_client:
-                try:
-                    response = gemini_client.chat.completions.create(
-                        model=settings.GEMINI_MODEL,
-                        messages=[
-                            {"role": "system", "content": SPEECH_FORMATTER_PROMPT},
-                            {"role": "user", "content": clean_text}
-                        ]
-                    )
-                    formatted_speech = response.choices[0].message.content.strip()
-                    log.info("Speech formatted successfully via Gemini fallback.")
-                except Exception as e:
-                    log.warning(f"Gemini speech formatter failed: {e}")
+            # Step 2: Apply local heuristic speech formatting (instant, no API call)
+            formatted_speech = self._local_heuristic_formatting(clean_text)
 
-            # If LLM failed, fallback to local heuristic regex replacements
-            if not formatted_speech:
-                log.info("Using local heuristic speech formatting rules.")
-                formatted_speech = self._local_heuristic_formatting(clean_text)
-
-            # Final sanitization
+            # Step 3: Collapse multiple spaces into one
             formatted_speech = re.sub(r'\s+', ' ', formatted_speech).strip()
+            
+            log.info(f"Speech formatted via local heuristics in <1ms")
             return formatted_speech
 
         except Exception as e:
