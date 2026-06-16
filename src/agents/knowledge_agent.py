@@ -63,37 +63,53 @@ class KnowledgeAgent:
             )
             
             response_text = ""
+            _LLM_TIMEOUT = 7  # hard ceiling per LLM call
             
-            # Try Groq
+            # Try Groq with hard timeout
             if groq_client:
                 try:
-                    response = await asyncio.to_thread(
-                        groq_client.chat.completions.create,
-                        model=settings.GROQ_MODEL,
-                        messages=[{"role": "user", "content": prompt}]
+                    response = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            groq_client.chat.completions.create,
+                            model=settings.GROQ_MODEL,
+                            messages=[{"role": "user", "content": prompt}]
+                        ),
+                        timeout=_LLM_TIMEOUT
                     )
                     response_text = response.choices[0].message.content.strip()
                     log.info("KnowledgeAgent LLM response generated successfully.")
-                except Exception as e:
-                    log.warning(f"KnowledgeAgent Groq generation failed: {e}")
+                except (asyncio.TimeoutError, Exception) as e:
+                    log.warning(f"KnowledgeAgent Groq failed ({type(e).__name__}): {e}")
                     
-            # Try Gemini fallback
+            # Try Gemini fallback with hard timeout
             if not response_text and gemini_client:
                 try:
-                    response = await asyncio.to_thread(
-                        gemini_client.chat.completions.create,
-                        model=settings.GEMINI_MODEL,
-                        messages=[{"role": "user", "content": prompt}]
+                    response = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            gemini_client.chat.completions.create,
+                            model=settings.GEMINI_MODEL,
+                            messages=[{"role": "user", "content": prompt}]
+                        ),
+                        timeout=_LLM_TIMEOUT
                     )
                     response_text = response.choices[0].message.content.strip()
                     log.info("KnowledgeAgent Gemini fallback generated successfully.")
-                except Exception as e:
-                    log.warning(f"KnowledgeAgent Gemini generation failed: {e}")
+                except (asyncio.TimeoutError, Exception) as e:
+                    log.warning(f"KnowledgeAgent Gemini failed ({type(e).__name__}): {e}")
                     
             # Heuristic fallback if both fail
             if not response_text:
                 log.info("KnowledgeAgent using hard retrieval context fallback.")
-                response_text = "Based on our database: " + rag_context.split("\n")[1]
+                # Extract meaningful content from RAG — skip question/metadata lines
+                lines = [l.strip() for l in rag_context.split("\n") if l.strip()]
+                # Pick the longest content line (most likely to be the actual answer)
+                answer_lines = [l for l in lines if len(l) > 30 and not l.lower().startswith("question")]
+                if answer_lines:
+                    response_text = answer_lines[0][:300]  # Cap at 300 chars for voice
+                elif len(lines) > 2:
+                    response_text = lines[2][:300]
+                else:
+                    response_text = "I found some information in our records, but I am unable to give a detailed answer right now. Please call the hospital helpdesk at extension 100."
                 
             # Clean up any potential markdown formatting in output
             response_text = response_text.replace("*", "").replace("#", "").strip()

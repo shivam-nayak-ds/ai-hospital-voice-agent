@@ -54,50 +54,82 @@ class AshaPlanner:
             last_user_message = get_message_content(messages[-1])
             intent = "chitchat"
             entities = {}
+            heuristic_matched = False
             
-            # 1. Groq (Primary router)
+            # 0. Heuristic Rules FIRST (instant — skips LLM for common patterns)
+            text_lower = last_user_message.lower()
+            if any(w in text_lower for w in ["book", "appointment", "reserve", "slot"]):
+                intent = "book_appointment"
+                heuristic_matched = True
+            elif any(w in text_lower for w in ["doctor", "physician", "practitioner", "timings of dr", "schedule of dr"]):
+                intent = "doctor_search"
+                heuristic_matched = True
+            elif any(w in text_lower for w in ["report", "lab", "test status"]):
+                intent = "lab_report_status"
+                heuristic_matched = True
+            elif any(w in text_lower for w in ["emergency", "chest pain", "bleeding"]):
+                intent = "emergency"
+                heuristic_matched = True
+            elif any(w in text_lower for w in ["price", "cost", "billing", "charges"]):
+                intent = "billing_catalog"
+                heuristic_matched = True
+            elif any(w in text_lower for w in ["tell me about", "department", "departments", "specialty", "speciality", "specialties", "address", "location", "where is", "direction", "timing", "timings", "hours", "open", "visiting", "policy", "faq", "question"]):
+                intent = "faq"
+                heuristic_matched = True
+            
+            if heuristic_matched:
+                log.info(f"Heuristic matched intent: '{intent}' (skipping LLM)")
+            
+            # 1. LLM Classification only if heuristic didn't match
+            _LLM_TIMEOUT = 5  # NLU must be fast — 5s hard ceiling
             groq_success = False
-            if groq_client:
+            
+            if not heuristic_matched and groq_client:
                 try:
-                    response = await asyncio.to_thread(
-                        groq_client.chat.completions.create,
-                        model=settings.GROQ_MODEL,
-                        messages=[
-                            {"role": "system", "content": prompt},
-                            {"role": "user", "content": last_user_message}
-                        ],
-                        response_format={"type": "json_object"}
+                    response = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            groq_client.chat.completions.create,
+                            model=settings.GROQ_MODEL,
+                            messages=[
+                                {"role": "system", "content": prompt},
+                                {"role": "user", "content": last_user_message}
+                            ],
+                            response_format={"type": "json_object"}
+                        ),
+                        timeout=_LLM_TIMEOUT
                     )
                     data = json.loads(response.choices[0].message.content)
                     intent = data.get("intent", "chitchat")
                     entities = data.get("extracted_entities", {})
                     log.info(f"Groq intent classified as: '{intent}'")
                     groq_success = True
-                except Exception as e:
-                    log.warning(f"Groq NLU extraction failed: {e}")
+                except (asyncio.TimeoutError, Exception) as e:
+                    log.warning(f"Groq NLU extraction failed ({type(e).__name__}): {e}")
                     
-            # 2. Gemini Fallback
-            if not groq_success and gemini_client:
+            # 2. Gemini Fallback (only if heuristic didn't match AND Groq failed)
+            if not heuristic_matched and not groq_success and gemini_client:
                 try:
-                    response = await asyncio.to_thread(
-                        gemini_client.chat.completions.create,
-                        model=settings.GEMINI_MODEL,
-                        messages=[
-                            {"role": "system", "content": prompt},
-                            {"role": "user", "content": last_user_message}
-                        ],
-                        response_format={"type": "json_object"}
+                    response = await asyncio.wait_for(
+                        asyncio.to_thread(
+                            gemini_client.chat.completions.create,
+                            model=settings.GEMINI_MODEL,
+                            messages=[
+                                {"role": "system", "content": prompt},
+                                {"role": "user", "content": last_user_message}
+                            ],
+                            response_format={"type": "json_object"}
+                        ),
+                        timeout=_LLM_TIMEOUT
                     )
                     data = json.loads(response.choices[0].message.content)
                     intent = data.get("intent", "chitchat")
                     entities = data.get("extracted_entities", {})
                     log.info(f"Gemini fallback intent classified as: '{intent}'")
-                except Exception as e:
-                    log.warning(f"Gemini NLU extraction failed: {e}")
+                except (asyncio.TimeoutError, Exception) as e:
+                    log.warning(f"Gemini NLU extraction failed ({type(e).__name__}): {e}")
                     
-            # 3. Heuristic Rules (Backup)
-            if intent == "chitchat":
-                text_lower = last_user_message.lower()
+            # 3. Post-LLM heuristic refinement (only if LLM returned chitchat)
+            if not heuristic_matched and intent == "chitchat":
                 if any(w in text_lower for w in ["book", "appointment", "reserve", "slot"]):
                     intent = "book_appointment"
                 elif any(w in text_lower for w in ["doctor", "physician", "practitioner", "timings of dr", "schedule of dr"]):

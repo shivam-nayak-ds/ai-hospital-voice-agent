@@ -147,38 +147,75 @@ async def chat_node(state: AgentState) -> Dict[str, Any]:
     gemini_client = get_gemini_client()
     
     prompt = SYSTEM_CHAT_PROMPT
-    response_text = "Hello! I am Ananya, your virtual hospital assistant. How can I help you today?"
+    last_msg = get_message_content(messages[-1]).lower().strip() if messages else ""
     
-    # Safely convert conversation history to standard dicts
+    # Smart local patterns — instant response, skip LLM entirely
+    local_matched = False
+    if any(w in last_msg for w in ["hi", "hello", "hey", "namaste", "good morning", "good evening"]):
+        response_text = "Hello! I am Ananya, your virtual hospital assistant. How can I help you today?"
+        local_matched = True
+    elif any(w in last_msg for w in ["how are you", "how r u", "kaise ho", "kya haal"]):
+        response_text = "I am doing great, thank you for asking! How can I assist you with Lifeline Hospital today?"
+        local_matched = True
+    elif any(w in last_msg for w in ["thank", "thanks", "dhanyavad", "shukriya"]):
+        response_text = "You are most welcome! Is there anything else I can help you with?"
+        local_matched = True
+    elif any(w in last_msg for w in ["bye", "goodbye", "alvida"]):
+        response_text = "Goodbye! Thank you for calling Lifeline Hospital. Have a wonderful day."
+        local_matched = True
+    elif any(w in last_msg for w in ["your name", "who are you", "kaun ho", "tumhara naam"]):
+        response_text = "I am Ananya, the virtual assistant at Lifeline Multi-Speciality Hospital. How may I help you?"
+        local_matched = True
+    elif any(w in last_msg for w in ["help", "what can you do"]):
+        response_text = "I can help you book appointments, find doctors, check lab reports, answer hospital FAQs, and more. What would you like to do?"
+        local_matched = True
+    else:
+        response_text = "I understand. Could you please rephrase that or tell me how I can assist you today?"
+    
+    if local_matched:
+        logger.info("Chat node: local pattern matched, skipping LLM call")
+        return {
+            "speech_output": response_text,
+            "next_node": END
+        }
+    
+    # Only call LLM for complex/unmatched chitchat
     history_dicts = convert_messages_to_dicts(messages[-5:])
     llm_messages = [{"role": "system", "content": prompt}] + history_dicts
     
     groq_success = False
+    _LLM_TIMEOUT = 7  # hard ceiling per LLM call
     
-    # 1. Try Groq — wrapped in asyncio.to_thread so the sync SDK doesn't block the loop
+    # 1. Try Groq — wrapped in asyncio.to_thread with hard timeout
     if groq_client:
         try:
-            response = await asyncio.to_thread(
-                groq_client.chat.completions.create,
-                model=settings.GROQ_MODEL,
-                messages=llm_messages
+            response = await asyncio.wait_for(
+                asyncio.to_thread(
+                    groq_client.chat.completions.create,
+                    model=settings.GROQ_MODEL,
+                    messages=llm_messages
+                ),
+                timeout=_LLM_TIMEOUT
             )
             response_text = response.choices[0].message.content
             groq_success = True
-        except Exception as e:
-            logger.warning(f"Groq chat response failed: {e}")
+        except (asyncio.TimeoutError, Exception) as e:
+            logger.warning(f"Groq chat failed ({type(e).__name__}): {e}")
             
-    # 2. Try Gemini Fallback
+    # 2. Try Gemini Fallback (only if Groq didn't timeout — avoids 2x wait)
     if not groq_success and gemini_client:
         try:
-            response = await asyncio.to_thread(
-                gemini_client.chat.completions.create,
-                model=settings.GEMINI_MODEL,
-                messages=llm_messages
+            response = await asyncio.wait_for(
+                asyncio.to_thread(
+                    gemini_client.chat.completions.create,
+                    model=settings.GEMINI_MODEL,
+                    messages=llm_messages
+                ),
+                timeout=_LLM_TIMEOUT
             )
             response_text = response.choices[0].message.content
-        except Exception as e:
-            logger.warning(f"Gemini chat response failed: {e}")
+        except (asyncio.TimeoutError, Exception) as e:
+            logger.warning(f"Gemini chat failed ({type(e).__name__}): {e}")
             
     return {
         "speech_output": response_text,

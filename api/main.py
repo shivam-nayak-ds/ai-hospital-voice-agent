@@ -2,12 +2,14 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from config.settings import settings
 from api.routes.health import router as health_router
 from api.routes.chat import router as chat_router
 from api.routes.twilio_voice import router as twilio_router
 from api.routes.livekit_voice import router as livekit_router
+from api.routes.panel import router as panel_router
 from src.core.handlers import register_exception_handlers
 from src.core.middleware.rate_limit import RedisRateLimitMiddleware
 from src.utils.logger import custom_logger as logger
@@ -42,6 +44,7 @@ app.include_router(health_router)
 app.include_router(chat_router)
 app.include_router(twilio_router)
 app.include_router(livekit_router)
+app.include_router(panel_router)
 
 # Mount static files for browser UI (LiveKit demo, etc.)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -53,8 +56,15 @@ async def root():
     return {
         "status": "online",
         "message": f"Welcome to the {settings.APP_NAME} API Service.",
+        "panel": "/panel",
         "documentation": "/docs"
     }
+
+
+@app.get("/panel", include_in_schema=False)
+async def serve_panel():
+    """Serve the hospital admin panel HTML."""
+    return FileResponse("static/index.html")
 
 # Startup and Shutdown Lifecycle Logs
 @app.on_event("startup")

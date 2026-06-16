@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, status
 from api.schemas.request import ChatRequest
 from api.schemas.response import ChatResponse
@@ -7,8 +8,10 @@ from src.utils.logger import custom_logger as logger
 
 router = APIRouter(prefix="/api/chat", tags=["Chat"])
 
-# In-memory session store mapping session_id to AshaSwarm instances
-_active_sessions = {}
+# In-memory session store: session_id -> (AshaSwarm, last_active_timestamp)
+_active_sessions: dict = {}
+_session_timestamps: dict = {}
+SESSION_TTL_HOURS = 2
 
 @router.post("", response_model=ChatResponse, summary="Process chat message through AI agents")
 async def chat_endpoint(payload: ChatRequest):
@@ -31,8 +34,20 @@ async def chat_endpoint(payload: ChatRequest):
         if session_id not in _active_sessions:
             log.info(f"Initializing new conversation session swarm for ID: {session_id}")
             _active_sessions[session_id] = AshaSwarm(user_id=session_id)
-            
+        
+        # Update last-active timestamp
+        _session_timestamps[session_id] = datetime.now()
         swarm = _active_sessions[session_id]
+        
+        # Periodic cleanup: remove sessions older than SESSION_TTL_HOURS
+        now = datetime.now()
+        expired = [sid for sid, ts in _session_timestamps.items()
+                   if now - ts > timedelta(hours=SESSION_TTL_HOURS)]
+        for sid in expired:
+            _active_sessions.pop(sid, None)
+            _session_timestamps.pop(sid, None)
+        if expired:
+            logger.info(f"Cleaned up {len(expired)} expired chat sessions")
         
         # Execute conversation turn and assemble streamed words
         response_text = ""

@@ -9,23 +9,39 @@ from src.agents.graph import get_agent_graph
 from src.agents.state import AgentState
 from src.utils.logger import custom_logger as logger
 
-# ─── LLM Client Helpers ───────────────────────────────────────────────────────
+# ─── LLM Client Helpers (Singleton Cached) ──────────────────────────────────
+
+_groq_client = None
+_gemini_client = None
+_CLIENT_TIMEOUT = 5  # seconds — fast fail when API is down
+
 
 def get_groq_client() -> Groq | None:
+    global _groq_client
+    if _groq_client is not None:
+        return _groq_client
     if settings.GROQ_API_KEY:
         try:
-            return Groq(api_key=settings.GROQ_API_KEY)
+            _groq_client = Groq(api_key=settings.GROQ_API_KEY, timeout=_CLIENT_TIMEOUT, max_retries=0)
+            return _groq_client
         except Exception as e:
             logger.warning(f"Failed to initialize Groq client: {e}")
     return None
 
+
 def get_gemini_client() -> OpenAI | None:
+    global _gemini_client
+    if _gemini_client is not None:
+        return _gemini_client
     if settings.GOOGLE_API_KEY:
         try:
-            return OpenAI(
+            _gemini_client = OpenAI(
                 api_key=settings.GOOGLE_API_KEY,
-                base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+                base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                timeout=_CLIENT_TIMEOUT,
+                max_retries=0
             )
+            return _gemini_client
         except Exception as e:
             logger.warning(f"Failed to initialize Gemini client: {e}")
     return None

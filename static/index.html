@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASHA - Premium Hospital AI Agent</title>
+    <title>Lifeline Hospital — Admin Panel</title>
     <link rel="stylesheet" href="/static/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -19,24 +19,89 @@
         <aside class="sidebar">
             <div class="logo">
                 <i class="fas fa-hospital-user"></i>
-                <span>ASHA AI</span>
+                <span>Lifeline AI</span>
             </div>
             <nav class="nav-menu">
-                <div class="nav-item active"><i class="fas fa-comment-medical"></i> Assistant</div>
-                <div class="nav-item"><i class="fas fa-calendar-check"></i> Appointments</div>
-                <div class="nav-item"><i class="fas fa-user-md"></i> Specialists</div>
-                <div class="nav-item"><i class="fas fa-cog"></i> Settings</div>
+                <div class="nav-item active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</div>
+                <div class="nav-item" data-tab="assistant"><i class="fas fa-comment-medical"></i> Assistant</div>
+                <div class="nav-item" data-tab="appointments"><i class="fas fa-calendar-check"></i> Appointments</div>
+                <div class="nav-item" data-tab="doctors"><i class="fas fa-user-md"></i> Doctors</div>
+                <div class="nav-item" data-tab="patients"><i class="fas fa-users"></i> Patients</div>
+                <div class="nav-item" data-tab="wards"><i class="fas fa-bed"></i> Wards</div>
+                <div class="nav-item" data-tab="billing"><i class="fas fa-file-invoice-dollar"></i> Billing</div>
+                <div class="nav-item" data-tab="emergency"><i class="fas fa-ambulance"></i> Emergency</div>
             </nav>
             <div class="hospital-info">
-                <p><strong>City Care Hospital</strong></p>
-                <p>Indore, MP</p>
+                <p><strong>Lifeline Hospital</strong></p>
+                <p>Multi-Speciality</p>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <section class="chat-section" id="assistant-tab">
+        <!-- ═══ TAB 1: DASHBOARD ═══ -->
+        <section class="content-section active" id="dashboard-tab">
+            <header class="tab-header">
+                <h1><i class="fas fa-chart-line"></i> Dashboard</h1>
+                <p class="tab-subtitle">Real-time hospital overview</p>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-appts">--</span>
+                        <span class="stat-label">Today's Appointments</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-user-md"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-doctors">--</span>
+                        <span class="stat-label">Active Doctors</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-patients">--</span>
+                        <span class="stat-label">Total Patients</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange"><i class="fas fa-bed"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-beds">--%</span>
+                        <span class="stat-label">Bed Occupancy</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon teal"><i class="fas fa-rupee-sign"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="stat-revenue">--</span>
+                        <span class="stat-label">Today's Revenue</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="panel-card">
+                    <h3><i class="fas fa-bullseye"></i> Top Intents Today</h3>
+                    <div id="intents-list" class="list-feed">
+                        <p class="muted">Loading...</p>
+                    </div>
+                </div>
+                <div class="panel-card">
+                    <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+                    <div id="activity-feed" class="list-feed">
+                        <p class="muted">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ TAB 2: AI ASSISTANT (Chat + Voice) ═══ -->
+        <section class="chat-section" id="assistant-tab" style="display: none;">
             <!-- Voice Mode Overlay -->
-            <div id="voice-overlay" class="voice-overlay">
+            <div id="voice-overlay" class="voice-overlay" style="display: none;">
                 <div class="orb-container">
                     <div class="orb"></div>
                     <div class="orb-ring"></div>
@@ -51,13 +116,13 @@
                     <span class="dot"></span>
                     <span>Ananya is Online</span>
                 </div>
-                <h1>Health Assistant</h1>
+                <h1>AI Health Assistant</h1>
             </header>
 
             <div id="chat-container" class="chat-messages">
                 <div class="message asha-msg">
                     <div class="avatar"><i class="fas fa-user-nurse"></i></div>
-                    <div class="content">Good morning! I am Ananya, your Senior Health Executive. How can I assist you with appointments or hospital information today?</div>
+                    <div class="content">Good morning! I am Ananya, your hospital assistant. How can I help you today?</div>
                 </div>
             </div>
 
@@ -65,7 +130,6 @@
                 <div class="visualizer-container" id="visualizer">
                     <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
                 </div>
-                
                 <div class="input-container">
                     <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off">
                     <button id="send-btn" class="icon-btn"><i class="fas fa-paper-plane"></i></button>
@@ -75,10 +139,11 @@
             </div>
         </section>
 
-        <!-- Appointments Tab -->
+        <!-- ═══ TAB 3: APPOINTMENTS ═══ -->
         <section class="content-section" id="appointments-tab" style="display: none;">
-            <header class="chat-header">
-                <h1>Scheduled Appointments</h1>
+            <header class="tab-header">
+                <h1><i class="fas fa-calendar-check"></i> Appointments</h1>
+                <p class="tab-subtitle">Today's scheduled appointments</p>
             </header>
             <div class="table-container">
                 <table id="appointments-table">
@@ -88,22 +153,115 @@
                             <th>Doctor</th>
                             <th>Time</th>
                             <th>Date</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- Data will be injected here -->
-                    </tbody>
+                    <tbody><tr><td colspan="5" class="muted">Loading...</td></tr></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Doctors Tab -->
+        <!-- ═══ TAB 4: DOCTORS ═══ -->
         <section class="content-section" id="doctors-tab" style="display: none;">
-            <header class="chat-header">
-                <h1>Our Specialists</h1>
+            <header class="tab-header">
+                <h1><i class="fas fa-user-md"></i> Doctors</h1>
+                <p class="tab-subtitle">Our specialists and their availability</p>
             </header>
             <div class="grid-container" id="doctors-grid">
-                <!-- Data will be injected here -->
+                <p class="muted">Loading doctors...</p>
+            </div>
+        </section>
+
+        <!-- ═══ TAB 5: PATIENTS ═══ -->
+        <section class="content-section" id="patients-tab" style="display: none;">
+            <header class="tab-header">
+                <h1><i class="fas fa-users"></i> Patients</h1>
+                <p class="tab-subtitle">Registered patient records</p>
+            </header>
+            <div class="search-bar">
+                <input type="text" id="patient-search" placeholder="Search by name or phone..." />
+                <button id="patient-search-btn" class="icon-btn"><i class="fas fa-search"></i></button>
+            </div>
+            <div class="table-container">
+                <table id="patients-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td colspan="6" class="muted">Loading...</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ═══ TAB 6: WARDS ═══ -->
+        <section class="content-section" id="wards-tab" style="display: none;">
+            <header class="tab-header">
+                <h1><i class="fas fa-bed"></i> Ward Management</h1>
+                <p class="tab-subtitle">Real-time bed occupancy across wards</p>
+            </header>
+            <div class="wards-grid" id="wards-grid">
+                <p class="muted">Loading wards...</p>
+            </div>
+        </section>
+
+        <!-- ═══ TAB 7: BILLING ═══ -->
+        <section class="content-section" id="billing-tab" style="display: none;">
+            <header class="tab-header">
+                <h1><i class="fas fa-file-invoice-dollar"></i> Billing Catalog</h1>
+                <p class="tab-subtitle">Service pricing and insurance information</p>
+            </header>
+            <div class="table-container">
+                <table id="billing-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Service</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody><tr><td colspan="4" class="muted">Loading...</td></tr></tbody>
+                </table>
+            </div>
+            <div class="panel-card" style="margin-top: 20px;">
+                <h3><i class="fas fa-shield-alt"></i> Insurance Partners</h3>
+                <div id="insurance-list" class="list-feed">
+                    <p class="muted">Loading insurance data...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ TAB 8: EMERGENCY ═══ -->
+        <section class="content-section" id="emergency-tab" style="display: none;">
+            <header class="tab-header emergency-header">
+                <h1><i class="fas fa-ambulance"></i> Emergency Triage</h1>
+                <p class="tab-subtitle">AI-powered emergency detection and routing</p>
+            </header>
+            <div class="emergency-panel">
+                <div class="panel-card emergency-info">
+                    <h3><i class="fas fa-exclamation-triangle"></i> How It Works</h3>
+                    <ul class="info-list">
+                        <li><i class="fas fa-check-circle green"></i> AI detects emergency keywords in patient speech/text</li>
+                        <li><i class="fas fa-check-circle green"></i> Auto-classifies severity: Critical, Urgent, Non-Urgent</li>
+                        <li><i class="fas fa-check-circle green"></i> Critical cases bypass normal flow — instant ER routing</li>
+                        <li><i class="fas fa-check-circle green"></i> Ambulance dispatch triggered for life-threatening cases</li>
+                    </ul>
+                </div>
+                <div class="panel-card emergency-info">
+                    <h3><i class="fas fa-phone-alt"></i> Emergency Contacts</h3>
+                    <div class="emergency-contacts">
+                        <div class="contact-row"><span>Ambulance</span><strong>108</strong></div>
+                        <div class="contact-row"><span>Hospital ER</span><strong>+91-XXXXXXXXXX</strong></div>
+                        <div class="contact-row"><span>Blood Bank</span><strong>+91-XXXXXXXXXX</strong></div>
+                        <div class="contact-row"><span>Poison Control</span><strong>1800-XXX-XXXX</strong></div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
