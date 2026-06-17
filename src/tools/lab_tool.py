@@ -1,4 +1,4 @@
-from src.db.session import get_db
+from src.db.session import get_db_readonly
 from src.services.lab_service import LabService
 from src.core.domain_exceptions import AshaBaseException
 from src.utils.logger import custom_logger as logger
@@ -8,7 +8,7 @@ async def check_lab_report_status(patient_phone: str) -> str:
     Checks the status of lab reports ordered for a patient phone number.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = LabService(db)
             reports, patient = await service.get_patient_reports(patient_phone)
 

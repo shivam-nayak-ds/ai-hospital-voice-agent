@@ -12,7 +12,7 @@ Handles semantic and database validations for extracted session entities:
 import re
 from datetime import datetime, date, timedelta
 from typing import Dict, Any, Tuple, List, Optional
-from src.db.session import get_db
+from src.db.session import get_db_readonly
 from src.db.models import Doctor
 from src.utils.logger import custom_logger as logger
 
@@ -108,7 +108,7 @@ class AshaValidator:
         
         try:
             from sqlalchemy import select
-            async with get_db() as db:
+            async with get_db_readonly() as db:
                 stmt = select(Doctor).filter(Doctor.NAME.ilike(f"%{clean_name}%"), Doctor.STATUS == "Active").limit(5)
                 result = await db.execute(stmt)
                 matching_doctors = list(result.scalars().all())

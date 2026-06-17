@@ -1,6 +1,9 @@
+import re
+import random
 from typing import Dict, Any
 from langgraph.graph import StateGraph, END
 
+from config.settings import settings
 from src.agents.state import AgentState
 from src.agents.prompts import SYSTEM_CHAT_PROMPT
 from src.utils.logger import custom_logger as logger
@@ -23,6 +26,10 @@ _memory_mgr = SessionMemoryManager()
 _ops_agent = AshaOperationsAgent()
 _knowledge_agent = KnowledgeAgent()
 _response_builder = AshaResponseBuilder()
+
+# ─── OTP Store (session_id -> expected_otp) ───────────────────────────────────
+# In production, use Redis with TTL for OTP storage and SMS delivery via Twilio/MSG91
+_pending_otps: Dict[str, str] = {}
 
 
 # ─── LangGraph Nodes ──────────────────────────────────────────────────────────
@@ -59,11 +66,14 @@ async def nlu_parser_node(state: AgentState) -> Dict[str, Any]:
 
 def otp_verification_node(state: AgentState) -> Dict[str, Any]:
     """
-    Verifies caller credentials via SMS OTP (Mock verification).
+    Verifies caller credentials via OTP.
+    Generates random 4-digit OTP (mock SMS delivery).
+    In production, integrate with Twilio/MSG91 for real SMS delivery.
     """
     logger.info("LangGraph Node: OTP Verification")
     patient_phone = state.get("patient_phone")
     otp_sent_to = state.get("otp_sent_to")
+    session_id = state.get("session_id", "default")
     messages = state.get("messages", [])
     
     # 1. Ask for mobile number if missing
@@ -75,9 +85,13 @@ def otp_verification_node(state: AgentState) -> Dict[str, Any]:
         
     last_user_message = get_message_content(messages[-1]) if messages else ""
     
-    # 2. Trigger OTP if phone is set but not yet texted
+    # 2. Generate and 'send' OTP if phone is set but not yet texted
     if not otp_sent_to or otp_sent_to != patient_phone:
-        logger.success(f"OTP '1234' sent to mobile number: {patient_phone}")
+        # Generate random 4-digit OTP (in production: send via Twilio/MSG91 SMS API)
+        otp_code = str(random.randint(1000, 9999))
+        _pending_otps[session_id] = otp_code
+        logger.success(f"OTP '{otp_code}' generated for session {session_id}, phone: {patient_phone}")
+        # TODO: In production, send OTP via SMS: twilio_client.messages.create(...)
         return {
             "otp_sent_to": patient_phone,
             "speech_output": "I have sent a four digit verification code to your phone number. Please say or enter the code to verify your identity.",
@@ -88,8 +102,11 @@ def otp_verification_node(state: AgentState) -> Dict[str, Any]:
     digits = re.findall(r"\b\d{4}\b", last_user_message)
     if digits:
         entered_otp = digits[0]
-        if entered_otp == "1234":  # Mock verification check
-            logger.success("MFA OTP Verified successfully!")
+        expected_otp = _pending_otps.get(session_id)
+        
+        if expected_otp and entered_otp == expected_otp:
+            logger.success(f"OTP verified successfully for session {session_id}")
+            _pending_otps.pop(session_id, None)  # Clean up used OTP
             
             # Determine next node dynamically based on original intent
             intent = state.get("current_intent")
@@ -162,7 +179,7 @@ async def chat_node(state: AgentState) -> Dict[str, Any]:
     elif any(w in last_msg for w in ["your name", "who are you", "kaun ho", "tumhara naam"]):
         response_text = "I am Ananya, the virtual assistant at Lifeline Multi-Speciality Hospital. How may I help you?"
         local_matched = True
-    elif any(w in last_msg for w in ["help", "what can you do"]):
+    elif any(w in last_msg for w in ["what can you do", "help me with", "how can you help", "kya kar sakti"]):
         response_text = "I can help you book appointments, find doctors, check lab reports, answer hospital FAQs, and more. What would you like to do?"
         local_matched = True
     else:

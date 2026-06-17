@@ -1,4 +1,4 @@
-from src.db.session import get_db
+from src.db.session import get_db_readonly
 from src.services.billing_service import BillingService
 from src.core.domain_exceptions import AshaBaseException
 from src.utils.logger import custom_logger as logger
@@ -8,7 +8,7 @@ async def get_test_or_procedure_price(item_name: str) -> str:
     Retrieves the price for a test or procedure from the billing catalog.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = BillingService(db)
             results = await service.get_test_or_procedure_price(item_name)
 
@@ -39,7 +39,7 @@ async def check_ward_rates() -> str:
     Checks the availability and pricing of hospital wards.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = BillingService(db)
             wards = await service.check_ward_rates()
 
@@ -69,7 +69,7 @@ async def check_insurance_cashless(provider_name: str) -> str:
     Checks if an insurance provider offers cashless network support.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = BillingService(db)
             provider = await service.check_insurance_cashless(provider_name)
 

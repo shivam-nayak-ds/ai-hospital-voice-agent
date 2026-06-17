@@ -48,8 +48,9 @@ Base = declarative_base()
 @asynccontextmanager
 async def get_db():
     """
-    Async context manager for database sessions.
-    Ensures rollback on exceptions and automatic clean pool release.
+    Async context manager for WRITE database sessions.
+    Commits on success, rollbacks on exception, always closes.
+    Use this for INSERT/UPDATE/DELETE operations.
     """
     db = AsyncSessionLocal()
     try:
@@ -58,6 +59,25 @@ async def get_db():
     except Exception as e:
         await db.rollback()
         logger.error(f"Database transaction rolled back due to error: {e}")
+        raise e
+    finally:
+        await db.close()
+
+
+@asynccontextmanager
+async def get_db_readonly():
+    """
+    Async context manager for READ-ONLY database sessions.
+    No commit, no write lock — safe for SELECT queries under load.
+    Prevents unnecessary lock contention on read-heavy operations.
+    """
+    db = AsyncSessionLocal()
+    try:
+        yield db
+        # NO commit — read-only, no write locks acquired
+    except Exception as e:
+        await db.rollback()
+        logger.error(f"Read-only database session error: {e}")
         raise e
     finally:
         await db.close()

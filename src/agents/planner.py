@@ -27,6 +27,27 @@ class AshaPlanner:
     def __init__(self):
         logger.success("AshaPlanner Supervisor initialized.")
 
+    @staticmethod
+    def _heuristic_intent(text_lower: str) -> str | None:
+        """
+        Instant heuristic intent matching using keyword patterns.
+        Returns intent string if matched, None if no pattern matches.
+        Centralized to avoid code duplication between pre-LLM and post-LLM checks.
+        """
+        if any(w in text_lower for w in ["book", "appointment", "reserve", "slot"]):
+            return "book_appointment"
+        if any(w in text_lower for w in ["doctor", "physician", "practitioner", "timings of dr", "schedule of dr"]):
+            return "doctor_search"
+        if any(w in text_lower for w in ["report", "lab", "test status"]):
+            return "lab_report_status"
+        if any(w in text_lower for w in ["emergency", "chest pain", "bleeding"]):
+            return "emergency"
+        if any(w in text_lower for w in ["price", "cost", "billing", "charges"]):
+            return "billing_catalog"
+        if any(w in text_lower for w in ["tell me about", "department", "departments", "specialty", "speciality", "specialties", "address", "location", "where is", "direction", "timing", "timings", "hours", "open", "visiting", "policy", "faq", "question"]):
+            return "faq"
+        return None
+
     async def run_nlu(self, state: AgentState) -> Dict[str, Any]:
         """
         Runs the NLU extraction step to determine intent and entities.
@@ -58,26 +79,11 @@ class AshaPlanner:
             
             # 0. Heuristic Rules FIRST (instant — skips LLM for common patterns)
             text_lower = last_user_message.lower()
-            if any(w in text_lower for w in ["book", "appointment", "reserve", "slot"]):
-                intent = "book_appointment"
-                heuristic_matched = True
-            elif any(w in text_lower for w in ["doctor", "physician", "practitioner", "timings of dr", "schedule of dr"]):
-                intent = "doctor_search"
-                heuristic_matched = True
-            elif any(w in text_lower for w in ["report", "lab", "test status"]):
-                intent = "lab_report_status"
-                heuristic_matched = True
-            elif any(w in text_lower for w in ["emergency", "chest pain", "bleeding"]):
-                intent = "emergency"
-                heuristic_matched = True
-            elif any(w in text_lower for w in ["price", "cost", "billing", "charges"]):
-                intent = "billing_catalog"
-                heuristic_matched = True
-            elif any(w in text_lower for w in ["tell me about", "department", "departments", "specialty", "speciality", "specialties", "address", "location", "where is", "direction", "timing", "timings", "hours", "open", "visiting", "policy", "faq", "question"]):
-                intent = "faq"
-                heuristic_matched = True
+            heuristic_intent = self._heuristic_intent(text_lower)
+            heuristic_matched = heuristic_intent is not None
             
             if heuristic_matched:
+                intent = heuristic_intent
                 log.info(f"Heuristic matched intent: '{intent}' (skipping LLM)")
             
             # 1. LLM Classification only if heuristic didn't match
@@ -130,18 +136,9 @@ class AshaPlanner:
                     
             # 3. Post-LLM heuristic refinement (only if LLM returned chitchat)
             if not heuristic_matched and intent == "chitchat":
-                if any(w in text_lower for w in ["book", "appointment", "reserve", "slot"]):
-                    intent = "book_appointment"
-                elif any(w in text_lower for w in ["doctor", "physician", "practitioner", "timings of dr", "schedule of dr"]):
-                    intent = "doctor_search"
-                elif any(w in text_lower for w in ["report", "lab", "test status"]):
-                    intent = "lab_report_status"
-                elif any(w in text_lower for w in ["emergency", "chest pain", "bleeding"]):
-                    intent = "emergency"
-                elif any(w in text_lower for w in ["price", "cost", "billing", "charges"]):
-                    intent = "billing_catalog"
-                elif any(w in text_lower for w in ["tell me about", "department", "departments", "specialty", "speciality", "specialties", "address", "location", "where is", "direction", "timing", "timings", "hours", "open", "visiting", "policy", "faq", "question"]):
-                    intent = "faq"
+                post_intent = self._heuristic_intent(text_lower)
+                if post_intent:
+                    intent = post_intent
 
             # 4. Extract 10-digit phone number if missing from LLM extraction
             if not entities:

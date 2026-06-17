@@ -1,4 +1,4 @@
-from src.db.session import get_db
+from src.db.session import get_db_readonly
 from src.services.doctor_service import DoctorService
 from src.core.domain_exceptions import AshaBaseException
 from src.utils.logger import custom_logger as logger
@@ -8,7 +8,7 @@ async def search_doctors_by_specialty(specialization: str) -> str:
     Finds active doctors by medical specialization.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = DoctorService(db)
             doctors = await service.search_doctors_by_specialty(specialization)
 
@@ -36,7 +36,7 @@ async def get_doctor_schedule(doctor_name: str) -> str:
     Gets the availability schedule of a doctor.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = DoctorService(db)
             schedules, doctor = await service.get_doctor_schedule(doctor_name)
 

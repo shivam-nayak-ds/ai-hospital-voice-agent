@@ -4,11 +4,15 @@ knowledge_agent.py
 KnowledgeAgent: Handles FAQs, Department details, and hospital guidelines.
 Retrieves context from Qdrant/BM25 using retrieve_hospital_info and uses 
 the LLM to formulate safe, voice-friendly answers.
-Includes try-except guards and session bound logging.
+
+Includes an in-memory LRU cache to avoid expensive Qdrant + LLM calls
+for repeated questions (e.g., "visiting hours" asked 100 times).
 """
 
 from typing import Dict, Any
 import asyncio
+import hashlib
+from functools import lru_cache
 from config.settings import settings
 from src.utils.logger import custom_logger as logger
 from src.tools.rag_tool import retrieve_hospital_info
@@ -16,10 +20,17 @@ from src.tools.rag_tool import retrieve_hospital_info
 class KnowledgeAgent:
     """
     Hospital FAQ and Policy specialist using RAG-backed LLM generation.
-    Supports exception safety and trace logging.
+    Includes in-memory cache for repeated queries to avoid redundant Qdrant + LLM calls.
     """
     def __init__(self):
-        logger.success("KnowledgeAgent initialized.")
+        self._cache: Dict[str, str] = {}
+        self._cache_max = 50  # Max cached answers in memory
+        logger.success("KnowledgeAgent initialized with LRU cache.")
+
+    def _cache_key(self, query: str) -> str:
+        """Generate a normalized cache key from the query."""
+        normalized = query.strip().lower()
+        return hashlib.md5(normalized.encode()).hexdigest()[:12]
 
     async def run(self, query: str, state: Dict[str, Any]) -> Dict[str, Any]:
         session_id = state.get("session_id", "default")
@@ -27,6 +38,15 @@ class KnowledgeAgent:
         log.info(f"KnowledgeAgent running RAG query: '{query}'")
         
         try:
+            # 0. Check cache first — avoid expensive Qdrant + LLM for repeated questions
+            cache_key = self._cache_key(query)
+            if cache_key in self._cache:
+                log.info(f"KnowledgeAgent: Cache HIT for query: '{query}'")
+                return {
+                    "speech_output": self._cache[cache_key],
+                    "next_node": "formatter_node"
+                }
+            
             # 1. Retrieve raw search results from hospital knowledge base
             rag_context = await retrieve_hospital_info(query, limit=3)
             
@@ -113,6 +133,12 @@ class KnowledgeAgent:
                 
             # Clean up any potential markdown formatting in output
             response_text = response_text.replace("*", "").replace("#", "").strip()
+            
+            # Store in cache (evict oldest if cache is full)
+            if len(self._cache) >= self._cache_max:
+                oldest_key = next(iter(self._cache))
+                del self._cache[oldest_key]
+            self._cache[cache_key] = response_text
             
             return {
                 "speech_output": response_text,

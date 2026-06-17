@@ -1,4 +1,4 @@
-from src.db.session import get_db
+from src.db.session import get_db, get_db_readonly
 from src.services.booking_service import BookingService
 from src.core.domain_exceptions import AshaBaseException
 from src.utils.logger import custom_logger as logger
@@ -8,7 +8,7 @@ async def check_slot_availability(doctor_name: str, date_str: str, time_str: str
     Checks if a slot is available for booking.
     """
     try:
-        async with get_db() as db:
+        async with get_db_readonly() as db:
             service = BookingService(db)
             return await service.check_slot_availability(
                 doctor_name=doctor_name,

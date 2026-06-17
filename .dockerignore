@@ -1,25 +1,55 @@
+# ─── Docker Build Exclusions ──────────────────────────────────────────────────
+# Keep Docker images lean by excluding dev/test/cache files
+
+# Virtual environments
 .env
 .venv/
 env/
 venv/
+
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
+
+# Git
 .git/
 .gitignore
+.github/
 
+# Logs
 logs/
 **/logs/
 *.log
 
+# Local data (should NOT go into Docker image)
 data/chroma_db/
 data/user_memory.json
+qdrant_storage/
+
+# Secrets (NEVER bake secrets into images)
 config/google_creds.json
 config/*credentials*.json
 config/*secret*.json
-static/temp_voice.mp3
 
+# Dev/test files
+tests/
 scratch/
 temp/
 
+# Documentation (not needed in production container)
+*.md
+
+# IDE and tooling
+.kilocode/
+.vscode/
+.idea/
+
+# Audio temp files
+static/temp_voice.mp3
+
+# OS files
+.DS_Store
+Thumbs.db

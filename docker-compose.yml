@@ -1,6 +1,13 @@
+# ─── ASHA AI Hospital Agent — Production Stack ───────────────────────────────
+# Services: App (Gunicorn + Uvicorn) | PostgreSQL | Redis | Qdrant
+# Run: docker compose up --build -d
+# Logs: docker compose logs -f app
+
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ai_hospital_agent_app
     env_file:
       - .env
@@ -15,8 +22,6 @@ services:
       REDIS_PORT: 6379
       QDRANT_HOST: qdrant
       QDRANT_PORT: 6333
-    volumes:
-      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -25,8 +30,23 @@ services:
       redis:
         condition: service_healthy
       qdrant:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/ready"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: "2.0"
+        reservations:
+          memory: 512M
+          cpus: "0.5"
+    # No volume mount in production — code is baked into the Docker image
 
   postgres:
     image: postgres:16-alpine
@@ -45,6 +65,17 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c max_connections=200
+      -c work_mem=16MB
+      -c effective_cache_size=128MB
 
   redis:
     image: redis:7-alpine
@@ -59,6 +90,15 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    command: >
+      redis-server
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
 
   qdrant:
     image: qdrant/qdrant:v1.9.2
@@ -68,7 +108,17 @@ services:
       - "6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6333/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: "1.0"
 
 volumes:
   postgres_data:

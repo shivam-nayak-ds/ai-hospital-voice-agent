@@ -117,7 +117,7 @@ class AshaVoiceOrchestrator:
 
             # Lightweight local intent check — used ONLY for TTS prosody (SSML rate/pitch).
             # The full LLM-based classification happens inside graph.ainvoke via the Planner node.
-            intent, _ = self.classifier.classify(text)
+            intent, _ = await self.classifier.classify(text)
             logger.info(f"[PROSODY INTENT]: {intent} (local rule-check for SSML only)")
 
             # Generate & Stream Response via LangGraph

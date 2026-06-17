@@ -1,4 +1,5 @@
 import json
+import asyncio
 from datetime import datetime
 from typing import Generator, AsyncGenerator
 from groq import Groq
@@ -58,47 +59,58 @@ class AshaIntentClassifier:
         self.groq_client = get_groq_client()
         self.gemini_client = get_gemini_client()
 
-    def classify(self, text: str) -> tuple[str, float]:
+    async def classify(self, text: str) -> tuple[str, float]:
         """
         Classifies user query transcript and returns (intent_name, confidence).
+        Uses asyncio.to_thread to prevent blocking the event loop.
+        Falls back to local rules on timeout or failure.
         """
         from src.agents.prompts import SYSTEM_ROUTER_PROMPT
         current_date = datetime.now().strftime("%Y-%m-%d")
         prompt = SYSTEM_ROUTER_PROMPT.format(current_date=current_date)
+        _CLASSIFY_TIMEOUT = 5  # 5s hard ceiling for intent classification
         
-        # 1. Try Groq (Primary, fast)
+        # 1. Try Groq (Primary, fast) — wrapped in asyncio.to_thread
         if self.groq_client:
             try:
-                response = self.groq_client.chat.completions.create(
-                    model=settings.GROQ_MODEL,
-                    messages=[
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": text}
-                    ],
-                    response_format={"type": "json_object"}
+                response = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        self.groq_client.chat.completions.create,
+                        model=settings.GROQ_MODEL,
+                        messages=[
+                            {"role": "system", "content": prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        response_format={"type": "json_object"}
+                    ),
+                    timeout=_CLASSIFY_TIMEOUT
                 )
                 data = json.loads(response.choices[0].message.content)
                 return data.get("intent", "chitchat"), 1.0
-            except Exception as e:
-                logger.warning(f"Groq intent classification failed: {e}")
+            except (asyncio.TimeoutError, Exception) as e:
+                logger.warning(f"Groq intent classification failed ({type(e).__name__}): {e}")
                 
-        # 2. Try Gemini (Secondary, fallback)
+        # 2. Try Gemini (Secondary, fallback) — wrapped in asyncio.to_thread
         if self.gemini_client:
             try:
-                response = self.gemini_client.chat.completions.create(
-                    model=settings.GEMINI_MODEL,
-                    messages=[
-                        {"role": "system", "content": prompt},
-                        {"role": "user", "content": text}
-                    ],
-                    response_format={"type": "json_object"}
+                response = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        self.gemini_client.chat.completions.create,
+                        model=settings.GEMINI_MODEL,
+                        messages=[
+                            {"role": "system", "content": prompt},
+                            {"role": "user", "content": text}
+                        ],
+                        response_format={"type": "json_object"}
+                    ),
+                    timeout=_CLASSIFY_TIMEOUT
                 )
                 data = json.loads(response.choices[0].message.content)
                 return data.get("intent", "chitchat"), 1.0
-            except Exception as e:
-                logger.warning(f"Gemini intent classification failed: {e}")
+            except (asyncio.TimeoutError, Exception) as e:
+                logger.warning(f"Gemini intent classification failed ({type(e).__name__}): {e}")
                 
-        # 3. Local Rule Fallback
+        # 3. Local Rule Fallback (instant, no API call)
         text_lower = text.lower()
         if "book" in text_lower or "appointment" in text_lower:
             return "book_appointment", 0.5
@@ -117,29 +129,35 @@ class AshaSwarm:
     """
     Asha Swarm Orchestrator.
     Manages patient conversational sessions and executes the LangGraph state machine.
+    Supports stateless operation: state can be injected from Redis for multi-worker compatibility.
     """
-    def __init__(self, user_id: str):
+    def __init__(self, user_id: str, initial_state: dict = None):
         self.user_id = user_id
         self.graph = get_agent_graph()
         
-        # Initialize session state (AgentState compliant)
-        self.state: AgentState = {
-            "messages": [],
-            "session_id": user_id,
-            "patient_name": None,
-            "patient_phone": None,
-            "doctor_name": None,
-            "specialization": None,
-            "appointment_date": None,
-            "appointment_time": None,
-            "appointment_id": None,
-            "is_otp_verified": False,
-            "otp_sent_to": None,
-            "current_intent": None,
-            "next_node": None,
-            "speech_output": None
-        }
-        logger.success(f"AshaSwarm initialized successfully for user session: {user_id}")
+        if initial_state:
+            # Restore state from Redis (multi-worker safe)
+            self.state: AgentState = initial_state
+            logger.info(f"AshaSwarm restored state from Redis for session: {user_id}")
+        else:
+            # Initialize fresh session state (AgentState compliant)
+            self.state: AgentState = {
+                "messages": [],
+                "session_id": user_id,
+                "patient_name": None,
+                "patient_phone": None,
+                "doctor_name": None,
+                "specialization": None,
+                "appointment_date": None,
+                "appointment_time": None,
+                "appointment_id": None,
+                "is_otp_verified": False,
+                "otp_sent_to": None,
+                "current_intent": None,
+                "next_node": None,
+                "speech_output": None
+            }
+            logger.success(f"AshaSwarm initialized new session for user: {user_id}")
 
     async def run(self, text: str) -> "AsyncGenerator[str, None]":
         """
