@@ -10,8 +10,10 @@ from api.routes.chat import router as chat_router
 from api.routes.twilio_voice import router as twilio_router
 from api.routes.livekit_voice import router as livekit_router
 from api.routes.panel import router as panel_router
+from api.routes.auth import router as auth_router
 from src.core.handlers import register_exception_handlers
 from src.core.middleware.rate_limit import RedisRateLimitMiddleware
+from src.core.middleware.security_headers import SecurityHeadersMiddleware
 from src.utils.logger import custom_logger as logger
 
 # Initialize FastAPI App
@@ -32,8 +34,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Bind Redis Rate Limiter Middleware (Phase 7)
+# Bind Redis Rate Limiter Middleware (30 req/min per IP)
 app.add_middleware(RedisRateLimitMiddleware, limit=30, window=60)
+
+# Bind Security Headers Middleware (OWASP-compliant headers on all responses)
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 # Register Global Exception Handlers
@@ -41,6 +46,7 @@ register_exception_handlers(app)
 
 # Include Routers
 app.include_router(health_router)
+app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(twilio_router)
 app.include_router(livekit_router)

@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     LIVEKIT_API_KEY: Optional[str] = Field(default=None)
     LIVEKIT_API_SECRET: Optional[str] = Field(default=None)
 
+    # Authentication
+    JWT_SECRET: str = Field(default="asha-dev-secret-change-in-production")
+
 
     @property
     def cors_origins_list(self) -> List[str]:
@@ -88,6 +91,8 @@ class Settings(BaseSettings):
                 raise ValueError("GROQ_API_KEY must be configured in production.")
             if not self.DATABASE_URL and not self.DB_PASSWORD:
                 raise ValueError("Database credentials must be provided in production.")
+            if self.JWT_SECRET == "asha-dev-secret-change-in-production":
+                raise ValueError("JWT_SECRET must be changed from default in production.")
         
         # Build SQL URL dynamically if absent
         if not self.DATABASE_URL:

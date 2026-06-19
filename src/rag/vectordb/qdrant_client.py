@@ -31,7 +31,8 @@ class QdrantClientWrapper:
                     client = QdrantClient(
                         url=settings.QDRANT_URL,
                         api_key=settings.QDRANT_API_KEY,
-                        timeout=10
+                        timeout=10,
+                        prefer_grpc=True  # Fix: Use gRPC to bypass Windows SSL issue
                     )
                 else:
                     logger.info(f"Connecting to local Qdrant at {self.host}:{self.port} (Attempt {attempt}/{retries})...")
@@ -68,7 +69,8 @@ class QdrantClientWrapper:
                     client = AsyncQdrantClient(
                         url=settings.QDRANT_URL,
                         api_key=settings.QDRANT_API_KEY,
-                        timeout=10
+                        timeout=10,
+                        prefer_grpc=True  # Fix: Use gRPC to bypass Windows SSL issue
                     )
                 else:
                     logger.info(f"Connecting to local Async Qdrant at {self.host}:{self.port} (Attempt {attempt}/{retries})...")
