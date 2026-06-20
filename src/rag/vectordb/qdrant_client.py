@@ -1,9 +1,26 @@
 import time
 import asyncio
+import os
+import ssl
 from qdrant_client import QdrantClient, AsyncQdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
 from src.utils.logger import custom_logger as logger
 from config.settings import settings
+
+# ─── Fix Windows SSL Certificate Issue ────────────────────────────────────────
+# Qdrant Cloud uses Let's Encrypt certs that Windows Python can't verify
+# Create an unverified SSL context that skips certificate validation
+try:
+    import certifi
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+    os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
+except ImportError:
+    pass
+
+# Global unverified SSL context for Qdrant Cloud connections
+_unverified_ssl = ssl.create_default_context()
+_unverified_ssl.check_hostname = False
+_unverified_ssl.verify_mode = ssl.CERT_NONE
 
 class QdrantClientWrapper:
     """
@@ -28,11 +45,13 @@ class QdrantClientWrapper:
             try:
                 if settings.QDRANT_URL and settings.QDRANT_API_KEY:
                     logger.info(f"Connecting to Qdrant Cloud Cluster (Attempt {attempt}/{retries})...")
+                    # Use REST API with unverified SSL context (Windows Let's Encrypt issue)
                     client = QdrantClient(
                         url=settings.QDRANT_URL,
                         api_key=settings.QDRANT_API_KEY,
                         timeout=10,
-                        prefer_grpc=True  # Fix: Use gRPC to bypass Windows SSL issue
+                        prefer_grpc=False,
+                        verify=_unverified_ssl  # Skip SSL certificate verification
                     )
                 else:
                     logger.info(f"Connecting to local Qdrant at {self.host}:{self.port} (Attempt {attempt}/{retries})...")
@@ -66,11 +85,13 @@ class QdrantClientWrapper:
             try:
                 if settings.QDRANT_URL and settings.QDRANT_API_KEY:
                     logger.info(f"Connecting to Async Qdrant Cloud Cluster (Attempt {attempt}/{retries})...")
+                    # Use REST API with unverified SSL context (Windows Let's Encrypt issue)
                     client = AsyncQdrantClient(
                         url=settings.QDRANT_URL,
                         api_key=settings.QDRANT_API_KEY,
                         timeout=10,
-                        prefer_grpc=True  # Fix: Use gRPC to bypass Windows SSL issue
+                        prefer_grpc=False,
+                        verify=_unverified_ssl  # Skip SSL certificate verification
                     )
                 else:
                     logger.info(f"Connecting to local Async Qdrant at {self.host}:{self.port} (Attempt {attempt}/{retries})...")

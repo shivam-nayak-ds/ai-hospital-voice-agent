@@ -1,6 +1,13 @@
 import sys
 import asyncio
+import os
 from pathlib import Path
+
+# Set offline mode BEFORE any other imports to prevent HF network requests
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["HF_HUB_DISABLE_EXPERIMENTAL_WARNING"] = "1"
 
 # Ensure project root is in PYTHONPATH
 sys.path.append(str(Path(__file__).resolve().parents[1]))

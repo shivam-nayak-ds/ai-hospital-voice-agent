@@ -1,6 +1,18 @@
 import asyncio
 import httpx
+import os
 from typing import List, Optional
+
+# Force offline mode BEFORE any transformers imports (fixes Windows SSL issues)
+# This prevents huggingface_hub from making network requests
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+os.environ["HF_HUB_DISABLE_TELEMETRY"] = "1"
+os.environ["HF_HUB_DISABLE_EXPERIMENTAL_WARNING"] = "1"
+# Also disable SSL verification for huggingface_hub as a fallback
+os.environ["CURL_CA_BUNDLE"] = ""
+os.environ["REQUESTS_CA_BUNDLE"] = ""
+
 from src.utils.logger import custom_logger as logger
 from src.rag.config.settings import rag_settings
 
