@@ -144,6 +144,8 @@ LOCALITIES = [
     "Geeta Bhawan", "Khajrana", "Musakhedi", "Pipliyahana",
 ]
 
+BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+
 MALE_NAMES = ["Ramesh", "Suresh", "Amit", "Rahul", "Vikram", "Karan", "Rajesh", "Arjun",
               "Vijay", "Kabir", "Rohan", "Sanjay", "Harish", "Manish", "Abhishek", "Vivek",
               "Gaurav", "Nitin", "Prakash", "Mohan", "Ashok", "Deepak", "Ravi", "Anil"]
@@ -229,13 +231,13 @@ WARD_DATA = [
 # ═══════════════════════════════════════════════════════════════════════════════
 
 LAB_TESTS = [
-    ("Complete Blood Count (CBC)", "Hemoglobin: {hb} g/dL (Normal: 12-16), WBC: {wbc} /cumm (Normal: 4000-11000)"),
-    ("Thyroid Profile (T3, T4, TSH)", "TSH: {tsh} uIU/mL (Normal: 0.4-4.5)"),
-    ("Lipid Profile", "Total Cholesterol: {chol} mg/dL (Normal: <200), HDL: {hdl} mg/dL (Normal: >40)"),
-    ("HbA1c (Glycated Hemoglobin)", "HbA1c: {hba1c}% (Normal: <5.7%, Diabetic: >6.5%)"),
-    ("Serum Vitamin D", "25-OH Vitamin D: {vitd} ng/mL (Normal: 30-100)"),
-    ("Kidney Function Test (KFT)", "Serum Creatinine: {creat} mg/dL (Normal: 0.6-1.2), Urea: {urea} mg/dL"),
-    ("Liver Function Test (LFT)", "SGOT: {sgot} U/L (Normal: <40), SGPT: {sgpt} U/L (Normal: <40)"),
+    ("Complete Blood Count (CBC)", "Hemoglobin: {hb} g/dL (Normal: 12-16), WBC: {wbc} /cumm (Normal: 4000-11000)", "Hb: 12-16 g/dL, WBC: 4000-11000"),
+    ("Thyroid Profile (T3, T4, TSH)", "TSH: {tsh} uIU/mL (Normal: 0.4-4.5)", "TSH: 0.4-4.5 uIU/mL"),
+    ("Lipid Profile", "Total Cholesterol: {chol} mg/dL (Normal: <200), HDL: {hdl} mg/dL (Normal: >40)", "Cholesterol: <200, HDL: >40"),
+    ("HbA1c (Glycated Hemoglobin)", "HbA1c: {hba1c}% (Normal: <5.7%, Diabetic: >6.5%)", "Normal: <5.7%, Pre-diabetic: 5.7-6.4%"),
+    ("Serum Vitamin D", "25-OH Vitamin D: {vitd} ng/mL (Normal: 30-100)", "30-100 ng/mL"),
+    ("Kidney Function Test (KFT)", "Serum Creatinine: {creat} mg/dL (Normal: 0.6-1.2), Urea: {urea} mg/dL", "Creatinine: 0.6-1.2, Urea: 15-45"),
+    ("Liver Function Test (LFT)", "SGOT: {sgot} U/L (Normal: <40), SGPT: {sgpt} U/L (Normal: <40)", "SGOT: <40, SGPT: <40"),
 ]
 
 
@@ -330,6 +332,7 @@ async def seed_database():
 
         # ─── D. PATIENTS (50) ───────────────────────────────────────────────
         logger.info("Seeding 50 patients...")
+        today = datetime.date.today()
         patients = []
         for i in range(1, 51):
             gender = random.choice(["Male", "Female"])
@@ -338,13 +341,18 @@ async def seed_database():
             p_name = f"{first} {last}"
             phone = f"+91 99887 {i:05d}"
             email = f"{first.lower()}.{last.lower()}{i}@gmail.com"
-            age = random.randint(5, 82)
+            dob = today - datetime.timedelta(days=random.randint(365 * 5, 365 * 82))
             locality = random.choice(LOCALITIES)
             address = f"{random.randint(1, 200)}, {locality}, Bhopal, Madhya Pradesh"
+            emergency_name = random.choice(MALE_NAMES + FEMALE_NAMES) + " " + last
+            emergency_phone = f"+91 98765 {random.randint(10000, 99999)}"
 
             patients.append(Patient(
-                NAME=p_name, AGE=age, GENDER=gender,
+                NAME=p_name, DATE_OF_BIRTH=dob, GENDER=gender,
+                BLOOD_GROUP=random.choice(BLOOD_GROUPS),
                 PHONE=phone, EMAIL=email, ADDRESS=address,
+                EMERGENCY_CONTACT=emergency_phone,
+                EMERGENCY_CONTACT_NAME=emergency_name,
             ))
         db.add_all(patients)
         await db.commit()
@@ -360,7 +368,6 @@ async def seed_database():
         time_slots = ["09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
                       "12:00 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM",
                       "04:30 PM", "05:00 PM"]
-        today = datetime.date.today()
         used_slots = set()
         appointments = []
 
@@ -383,17 +390,31 @@ async def seed_database():
             used_slots.add(slot_key)
 
             status = "Confirmed" if day_offset >= -2 else "Completed"
-            if day_offset < 0 and random.random() < 0.1:
+            if day_offset < 0 and random.random() < 0.08:
                 status = "Cancelled"
+            elif day_offset < 0 and random.random() < 0.05:
+                status = "No-Show"
+
+            cancelled_by = None
+            cancellation_reason = None
+            if status == "Cancelled":
+                cancelled_by = random.choice(["patient", "doctor", "admin"])
+                cancellation_reason = random.choice([
+                    "Patient unwell", "Doctor emergency", "Schedule conflict",
+                    "Personal reasons", "Rescheduled to next week"
+                ])
 
             appointments.append(Appointment(
                 PATIENT_NAME=pat_names[p_idx],
                 DOCTOR_NAME=doc_names[d_idx],
                 APPOINTMENT_TIME=time_slot,
                 APPOINTMENT_DATE=appt_date,
+                DURATION_MINUTES=random.choice([15, 20, 30]),
                 PATIENT_ID=pat_ids[p_idx],
                 DOCTOR_ID=doc_ids[d_idx],
                 STATUS=status,
+                CANCELLED_BY=cancelled_by,
+                CANCELLATION_REASON=cancellation_reason,
             ))
         db.add_all(appointments)
         await db.commit()
@@ -436,6 +457,7 @@ async def seed_database():
         for i in range(1, 81):
             test = random.choice(LAB_TESTS)
             test_name = test[0]
+            normal_range = test[2]
             day_offset = random.randint(-30, 0)
             ordered_date = today + datetime.timedelta(days=day_offset)
             status = "Completed" if day_offset < -1 else random.choice(["Completed", "Pending"])
@@ -459,9 +481,12 @@ async def seed_database():
                 result = None
 
             p_idx = random.randint(0, len(patients) - 1)
+            ordering_doctor_idx = random.randint(0, len(doc_ids) - 1)
             reports.append(LabReport(
                 PATIENT_ID=pat_ids[p_idx], TEST_NAME=test_name,
-                RESULT=result, STATUS=status, ORDERED_DATE=ordered_date,
+                RESULT=result, NORMAL_RANGE=normal_range, STATUS=status,
+                ORDERED_DATE=ordered_date,
+                ORDERED_BY_DOCTOR_ID=doc_ids[ordering_doctor_idx],
             ))
         db.add_all(reports)
         await db.commit()
