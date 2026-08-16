@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = Field(default="gemini-1.5-pro")
     OPENAI_API_KEY: Optional[str] = Field(default=None)
     OPENAI_MODEL: str = Field(default="gpt-4o-mini")
-    EMBEDDING_MODEL_NAME: str = Field(default="all-MiniLM-L6-v2")
+    EMBEDDING_MODEL_NAME: str = Field(default="BAAI/bge-base-en-v1.5")
     
     # Database Settings
     DATABASE_URL: Optional[str] = Field(default=None)
@@ -69,6 +69,23 @@ class Settings(BaseSettings):
 
     # Authentication
     JWT_SECRET: str = Field(default="asha-dev-secret-change-in-production")
+
+    # Twilio: Telephony + SMS OTP
+    TWILIO_ACCOUNT_SID: Optional[str] = Field(default=None)
+    TWILIO_AUTH_TOKEN: Optional[str] = Field(default=None)
+    TWILIO_PHONE_NUMBER: Optional[str] = Field(default=None)
+    TWILIO_WHATSAPP_NUMBER: Optional[str] = Field(default="whatsapp:+14155238886")
+
+    # LangSmith: LLM Observability & Tracing
+    LANGSMITH_API_KEY: Optional[str] = Field(default=None)
+    LANGSMITH_PROJECT: str = Field(default="asha-hospital-agent")
+    LANGSMITH_TRACING: bool = Field(default=False)
+
+    # Hospital Branding (customizable per deployment)
+    HOSPITAL_NAME: str = Field(default="Lifeline Multi-Speciality Hospital")
+    HOSPITAL_CITY: str = Field(default="Bhopal")
+    HOSPITAL_PHONE: str = Field(default="0755-4200-100")
+    AGENT_NAME: str = Field(default="Ananya")
 
 
     @property
