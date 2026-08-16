@@ -99,8 +99,14 @@ data/processed/
 
 # AI Tool Configs
 .kilocode/
+.kilocode/**
 .qoder/
 .cursor/
+.agents/
+
+# Garbage scripts (never re-add)
+scripts/daily_commit.py
+scripts/daily_commit_state.json
 
 # Node modules (if any frontend tooling)
 node_modules/
