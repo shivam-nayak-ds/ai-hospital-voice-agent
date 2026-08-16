@@ -1,18 +1,20 @@
+from typing import Any
+
 from pydantic import BaseModel, Field, ValidationError
-from typing import List, Optional, Dict, Any
-from src.utils.logger import custom_logger as logger
+
 # pyrefly: ignore [missing-import]
-from src.rag.config.constants import VALID_CATEGORIES
+from src.utils.logger import custom_logger as logger
+
 
 class FAQItemSchema(BaseModel):
     id: str
     category: str
-    department: Optional[str] = "general"
+    department: str | None = "general"
     question: str
     answer: str
-    keywords: List[str] = Field(default_factory=list)
-    priority: Optional[str] = "medium"
-    language: Optional[str] = "en"
+    keywords: list[str] = Field(default_factory=list)
+    priority: str | None = "medium"
+    language: str | None = "en"
 
     model_config = {
         "extra": "ignore"  # Ignore internal fields like _source_file during schema validation
@@ -37,7 +39,7 @@ class FAQValidator:
     Validator to check the structure and content of raw FAQ items.
     """
     @staticmethod
-    def validate_item(item: Dict[str, Any]) -> Optional[FAQItemSchema]:
+    def validate_item(item: dict[str, Any]) -> FAQItemSchema | None:
         """
         Validates a single raw FAQ dictionary. Returns FAQItemSchema if valid, else None.
         """
@@ -64,7 +66,7 @@ class FAQValidator:
 
         return validated_item
 
-    def validate_all(self, items: List[Dict[str, Any]]) -> List[FAQItemSchema]:
+    def validate_all(self, items: list[dict[str, Any]]) -> list[FAQItemSchema]:
         """
         Filters and validates a list of raw FAQ dictionaries.
         """

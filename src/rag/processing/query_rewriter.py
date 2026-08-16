@@ -6,12 +6,12 @@ Transforms conversational/ambiguous voice speech into dense, keyword-rich querie
 with explicit department and category metadata filters before RAG retrieval.
 """
 
-from typing import Tuple, Optional, Dict, Any
 import re
+
 from src.utils.logger import custom_logger as logger
 
 # Department synonym dictionary for accurate metadata extraction
-DEPARTMENT_MAPPINGS: Dict[str, str] = {
+DEPARTMENT_MAPPINGS: dict[str, str] = {
     "heart": "cardiology",
     "cardio": "cardiology",
     "cardiac": "cardiology",
@@ -72,7 +72,7 @@ DEPARTMENT_MAPPINGS: Dict[str, str] = {
     "rehab": "physiotherapy",
 }
 
-CATEGORY_KEYWORDS: Dict[str, str] = {
+CATEGORY_KEYWORDS: dict[str, str] = {
     "bill": "billing",
     "charge": "billing",
     "cost": "billing",
@@ -108,7 +108,7 @@ class QueryUnderstandingEngine:
     """
 
     @staticmethod
-    def process_query(raw_query: str, last_context: Optional[str] = None) -> Tuple[str, Optional[str], Optional[str]]:
+    def process_query(raw_query: str, last_context: str | None = None) -> tuple[str, str | None, str | None]:
         """
         Takes raw spoken query and returns:
           (rewritten_query, department_filter, category_filter)
@@ -122,14 +122,14 @@ class QueryUnderstandingEngine:
         cleaned = re.sub(r'\s+', ' ', cleaned).strip()
 
         # 1. Detect Category Filter
-        detected_category: Optional[str] = None
+        detected_category: str | None = None
         for kw, cat in CATEGORY_KEYWORDS.items():
             if kw in cleaned:
                 detected_category = cat
                 break
 
         # 2. Detect Department Filter
-        detected_department: Optional[str] = None
+        detected_department: str | None = None
         for kw, dept in DEPARTMENT_MAPPINGS.items():
             if kw in cleaned:
                 detected_department = dept

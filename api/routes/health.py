@@ -11,6 +11,7 @@ Endpoints:
 """
 
 import time
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
@@ -77,8 +78,9 @@ async def readiness_check():
 async def _check_database() -> dict:
     """Pings the PostgreSQL database with a lightweight SELECT 1 query."""
     try:
-        from src.db.session import engine
         from sqlalchemy import text
+
+        from src.db.session import engine
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         return {"status": "ok", "latency_ms": None}
@@ -90,6 +92,7 @@ async def _check_redis() -> dict:
     """Sends a PING command to Redis and expects PONG."""
     try:
         import redis.asyncio as aioredis
+
         from config.settings import settings
         r = aioredis.Redis(
             host=settings.REDIS_HOST,
@@ -108,6 +111,7 @@ async def _check_qdrant() -> dict:
     """Checks if the Qdrant vector DB is reachable via its HTTP API."""
     try:
         import httpx
+
         from config.settings import settings
         url = f"http://{settings.QDRANT_HOST}:{settings.QDRANT_PORT}/healthz"
         async with httpx.AsyncClient(timeout=2.0) as client:

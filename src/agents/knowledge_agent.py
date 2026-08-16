@@ -9,13 +9,14 @@ Includes an in-memory LRU cache to avoid expensive Qdrant + LLM calls
 for repeated questions (e.g., "visiting hours" asked 100 times).
 """
 
-from typing import Dict, Any
 import asyncio
 import hashlib
-from functools import lru_cache
+from typing import Any
+
 from config.settings import settings
-from src.utils.logger import custom_logger as logger
 from src.tools.rag_tool import retrieve_hospital_info
+from src.utils.logger import custom_logger as logger
+
 
 class KnowledgeAgent:
     """
@@ -23,7 +24,7 @@ class KnowledgeAgent:
     Includes in-memory cache for repeated queries to avoid redundant Qdrant + LLM calls.
     """
     def __init__(self):
-        self._cache: Dict[str, str] = {}
+        self._cache: dict[str, str] = {}
         self._cache_max = 50  # Max cached answers in memory
         logger.success("KnowledgeAgent initialized with LRU cache.")
 
@@ -32,7 +33,7 @@ class KnowledgeAgent:
         normalized = query.strip().lower()
         return hashlib.md5(normalized.encode()).hexdigest()[:12]
 
-    async def run(self, query: str, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, query: str, state: dict[str, Any]) -> dict[str, Any]:
         session_id = state.get("session_id", "default")
         log = logger.bind(session_id=session_id)
         log.info(f"KnowledgeAgent running RAG query: '{query}'")
@@ -65,7 +66,7 @@ class KnowledgeAgent:
                 }
                 
             # 2. Formulate voice-optimized response using LLM
-            from src.agents.ananya_agent import get_groq_client, get_gemini_client
+            from src.agents.ananya_agent import get_gemini_client, get_groq_client
             groq_client = get_groq_client()
             gemini_client = get_gemini_client()
             
@@ -121,9 +122,9 @@ class KnowledgeAgent:
             if not response_text:
                 log.info("KnowledgeAgent using hard retrieval context fallback.")
                 # Extract meaningful content from RAG — skip question/metadata lines
-                lines = [l.strip() for l in rag_context.split("\n") if l.strip()]
+                lines = [line_item.strip() for line_item in rag_context.split("\n") if line_item.strip()]
                 # Pick the longest content line (most likely to be the actual answer)
-                answer_lines = [l for l in lines if len(l) > 30 and not l.lower().startswith("question")]
+                answer_lines = [line_item for line_item in lines if len(line_item) > 30 and not line_item.lower().startswith("question")]
                 if answer_lines:
                     response_text = answer_lines[0][:300]  # Cap at 300 chars for voice
                 elif len(lines) > 2:

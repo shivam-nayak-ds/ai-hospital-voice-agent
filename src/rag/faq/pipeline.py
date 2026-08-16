@@ -1,11 +1,12 @@
-import os
 import glob
-from typing import List
-from src.utils.logger import custom_logger as logger
-from src.rag.loaders.documents import Document
+import os
+
+from src.rag.faq.cleaner import FAQCleaner
 from src.rag.faq.loader import FAQLoader
 from src.rag.faq.validator import FAQValidator
-from src.rag.faq.cleaner import FAQCleaner
+from src.rag.loaders.documents import Document
+from src.utils.logger import custom_logger as logger
+
 
 class FAQPipeline:
     """
@@ -18,7 +19,7 @@ class FAQPipeline:
         self.validator = FAQValidator()
         self.cleaner = FAQCleaner()
 
-    def run(self) -> List[Document]:
+    def run(self) -> list[Document]:
         """
         Runs the full FAQ processing pipeline on all JSON files in the faqs_dir.
         Returns a list of standardized Document objects.
@@ -36,7 +37,7 @@ class FAQPipeline:
             return []
 
         logger.info(f"Starting FAQ pipeline. Found {len(json_files)} JSON files to process.")
-        all_documents: List[Document] = []
+        all_documents: list[Document] = []
 
         for file_path in json_files:
             filename = os.path.basename(file_path)

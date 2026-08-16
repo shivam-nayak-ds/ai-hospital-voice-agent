@@ -1,7 +1,9 @@
-from typing import List
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.db.models import Doctor, DoctorSchedule
+
 
 class DoctorRepository:
     """
@@ -10,7 +12,7 @@ class DoctorRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def search_by_specialty(self, specialty: str, limit: int = 10) -> List[Doctor]:
+    async def search_by_specialty(self, specialty: str, limit: int = 10) -> list[Doctor]:
         """Queries active doctors matching the given medical specialization."""
         stmt = select(Doctor).filter(
             Doctor.SPECIALIZATION.ilike(f"%{specialty}%"),
@@ -19,7 +21,7 @@ class DoctorRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_name_substring(self, name_query: str, limit: int = 5) -> List[Doctor]:
+    async def get_by_name_substring(self, name_query: str, limit: int = 5) -> list[Doctor]:
         """Queries active doctors matching a partial string query for name resolution."""
         stmt = select(Doctor).filter(
             Doctor.NAME.ilike(f"%{name_query}%"),
@@ -28,7 +30,7 @@ class DoctorRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_name_fuzzy(self, name_query: str, threshold: int = 3, limit: int = 5) -> List[Doctor]:
+    async def get_by_name_fuzzy(self, name_query: str, threshold: int = 3, limit: int = 5) -> list[Doctor]:
         """
         Retrieves active doctors matching within a Levenshtein distance threshold.
         Enables speech transcription error-tolerance for phonetic misspelling.
@@ -70,7 +72,7 @@ class DoctorRepository:
         matches.sort(key=lambda x: x[0])
         return [doc for _, doc in matches[:limit]]
 
-    async def get_schedules(self, doctor_id: int) -> List[DoctorSchedule]:
+    async def get_schedules(self, doctor_id: int) -> list[DoctorSchedule]:
         """Queries the active availability schedules for a specific doctor ID."""
         stmt = select(DoctorSchedule).filter(
             DoctorSchedule.DOCTOR_ID == doctor_id,

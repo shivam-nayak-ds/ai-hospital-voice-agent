@@ -1,11 +1,12 @@
-import time
 import asyncio
 import os
 import ssl
-from qdrant_client import QdrantClient, AsyncQdrantClient
-from qdrant_client.http.exceptions import UnexpectedResponse
-from src.utils.logger import custom_logger as logger
+import time
+
+from qdrant_client import AsyncQdrantClient, QdrantClient
+
 from config.settings import settings
+from src.utils.logger import custom_logger as logger
 
 # ─── Fix Windows SSL Certificate Issue ────────────────────────────────────────
 # Qdrant Cloud uses Let's Encrypt certs that Windows Python can't verify

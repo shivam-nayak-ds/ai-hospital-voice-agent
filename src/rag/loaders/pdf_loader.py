@@ -1,8 +1,10 @@
 import os
-from typing import List
+
 from pypdf import PdfReader
+
 from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
+
 
 class PDFLoader:
     """
@@ -12,7 +14,7 @@ class PDFLoader:
         self.file_path = file_path
         logger.info(f"Loading PDF file from: {file_path}")
 
-    def load(self) -> List[Document]:
+    def load(self) -> list[Document]:
         """
         Loads the PDF page-by-page, returning a Document object for each page.
         """

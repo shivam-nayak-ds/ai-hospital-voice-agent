@@ -10,11 +10,12 @@ Handles semantic and database validations for extracted session entities:
 """
 
 import re
-from datetime import datetime, date, timedelta
-from typing import Dict, Any, Tuple, List, Optional
-from src.db.session import get_db_readonly
+from datetime import date, datetime, timedelta
+
 from src.db.models import Doctor
+from src.db.session import get_db_readonly
 from src.utils.logger import custom_logger as logger
+
 
 class AshaValidator:
     """
@@ -22,7 +23,7 @@ class AshaValidator:
     """
     
     @staticmethod
-    def validate_phone(phone: Optional[str]) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_phone(phone: str | None) -> tuple[bool, str | None, str | None]:
         """
         Cleans and validates the phone number.
         Returns:
@@ -44,7 +45,7 @@ class AshaValidator:
         return True, clean_phone, None
 
     @staticmethod
-    def validate_date(date_str: Optional[str], reference_date: Optional[date] = None) -> Tuple[bool, Optional[str], Optional[str]]:
+    def validate_date(date_str: str | None, reference_date: date | None = None) -> tuple[bool, str | None, str | None]:
         """
         Validates date strings and resolves relative date words to YYYY-MM-DD.
         Returns:
@@ -95,7 +96,7 @@ class AshaValidator:
         return True, resolved_date.strftime("%Y-%m-%d"), None
 
     @staticmethod
-    async def validate_doctor(doctor_name: Optional[str]) -> Tuple[bool, Optional[str], Optional[str], List[str]]:
+    async def validate_doctor(doctor_name: str | None) -> tuple[bool, str | None, str | None, list[str]]:
         """
         Resolves partial doctor name to a canonical active doctor in the database.
         Returns:

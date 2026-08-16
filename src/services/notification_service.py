@@ -1,14 +1,14 @@
-import smtplib
 import asyncio
+import smtplib
+from email.encoders import encode_base64
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.mime.base import MIMEBase
-from email.encoders import encode_base64
-from typing import Optional
 
 from config.settings import settings
 from src.utils.logger import custom_logger as logger
 from src.utils.pdf_generator import generate_appointment_ticket
+
 
 class NotificationService:
     """
@@ -20,7 +20,7 @@ class NotificationService:
         to_email: str,
         subject: str,
         body: str,
-        attachment_bytes: Optional[bytes] = None,
+        attachment_bytes: bytes | None = None,
         attachment_filename: str = "ticket.pdf"
     ) -> bool:
         """Synchronous helper designed to run inside an asyncio execution thread."""

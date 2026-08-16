@@ -10,9 +10,8 @@ Implements complete RAG lifecycle:
   5. Safety Guardrails & Citation Formatting
 """
 
-from typing import Optional, List
-from src.rag.retrieval.retriever import get_retriever
 from src.rag.processing.query_rewriter import QueryUnderstandingEngine
+from src.rag.retrieval.retriever import get_retriever
 from src.utils.logger import custom_logger as logger
 
 
@@ -47,7 +46,7 @@ async def retrieve_hospital_info(query: str, limit: int = 3) -> str:
             return "No relevant hospital policies or information found."
 
         # Step 3: Context Formatting with Citations & Metadata
-        context_parts: List[str] = []
+        context_parts: list[str] = []
         for i, doc in enumerate(docs, 1):
             source = doc.metadata.get("source", "Lifeline Knowledge Base")
             dept = doc.metadata.get("department", "General")

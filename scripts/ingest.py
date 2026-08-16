@@ -1,6 +1,6 @@
-import sys
 import asyncio
 import os
+import sys
 from pathlib import Path
 
 # Set offline mode BEFORE any other imports to prevent HF network requests
@@ -14,6 +14,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.rag.ingestion.ingest import run_full_ingestion
 from src.utils.logger import custom_logger as logger
+
 
 async def main():
     logger.info("Starting knowledge base ingestion pipeline...")

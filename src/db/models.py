@@ -1,5 +1,20 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, DateTime, Float, ForeignKey, Text, func, CheckConstraint, Index, UniqueConstraint
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import relationship
+
 from src.db.session import Base
 
 

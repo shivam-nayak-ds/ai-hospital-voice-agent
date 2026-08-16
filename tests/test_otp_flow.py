@@ -1,6 +1,6 @@
-import pytest
 from src.agents.graph import otp_verification_node
 from src.agents.state import AgentState
+
 
 def test_otp_verification_flow_missing_phone():
     state: AgentState = {

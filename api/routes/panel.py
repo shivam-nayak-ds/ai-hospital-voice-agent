@@ -5,11 +5,11 @@ Hospital Admin Panel API endpoints.
 Feeds data to the frontend dashboard, appointments, doctors, wards, patients, billing tabs.
 """
 
-import json
 from datetime import date, datetime
-from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import text
+
 from src.db.session import engine
 from src.utils.logger import custom_logger as logger
 
@@ -125,8 +125,8 @@ async def get_dashboard():
 
 @router.get("/appointments", summary="List appointments")
 async def list_appointments(
-    date_filter: Optional[str] = Query(None, alias="date", description="Filter by date (YYYY-MM-DD)"),
-    doctor: Optional[str] = Query(None, description="Filter by doctor name"),
+    date_filter: str | None = Query(None, alias="date", description="Filter by date (YYYY-MM-DD)"),
+    doctor: str | None = Query(None, description="Filter by doctor name"),
     limit: int = Query(50, ge=1, le=200),
 ):
     """Returns appointment list with patient, doctor, time, date, status."""
@@ -156,8 +156,8 @@ async def list_appointments(
 
 @router.get("/doctors", summary="List all doctors")
 async def list_doctors(
-    specialization: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
+    specialization: str | None = Query(None),
+    status: str | None = Query(None),
 ):
     """Returns doctor list with name, specialization, status, fee, experience."""
     sql = """SELECT d."ID", d."NAME", d."SPECIALIZATION", d."STATUS",
@@ -202,7 +202,7 @@ async def get_wards():
 
 @router.get("/patients", summary="Search patients")
 async def list_patients(
-    search: Optional[str] = Query(None, description="Search by name or phone"),
+    search: str | None = Query(None, description="Search by name or phone"),
     limit: int = Query(50, ge=1, le=200),
 ):
     """Returns patient list with basic info."""
@@ -223,7 +223,7 @@ async def list_patients(
 
 @router.get("/billing", summary="Billing catalog")
 async def get_billing(
-    category: Optional[str] = Query(None, description="Filter by category"),
+    category: str | None = Query(None, description="Filter by category"),
 ):
     """Returns billing catalog with item names, categories, prices."""
     sql = 'SELECT "ID", "ITEM_NAME", "CATEGORY", "PRICE", "CODE" FROM "BILLING_CATALOG" WHERE 1=1'
@@ -252,8 +252,8 @@ async def get_insurance():
 
 @router.get("/lab-reports", summary="Lab reports")
 async def get_lab_reports(
-    patient_id: Optional[int] = Query(None),
-    status_filter: Optional[str] = Query(None, alias="status"),
+    patient_id: int | None = Query(None),
+    status_filter: str | None = Query(None, alias="status"),
 ):
     """Returns lab reports with patient info."""
     sql = """SELECT l."ID", l."TEST_NAME", l."RESULT", l."STATUS", l."ORDERED_DATE",
@@ -300,4 +300,4 @@ async def get_tts_audio(text_input: str = Query(..., alias="text")):
         raise HTTPException(status_code=500, detail="TTS generation failed")
     except Exception as e:
         logger.error(f"TTS endpoint error: {e}")
-        raise HTTPException(status_code=500, detail=f"TTS error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"TTS error: {e!s}")

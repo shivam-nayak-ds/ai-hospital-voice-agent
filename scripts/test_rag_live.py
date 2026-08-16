@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.tools.rag_tool import retrieve_hospital_info
 
+
 async def main():
     queries = [
         "Who is the cardiologist and what is the fee?",

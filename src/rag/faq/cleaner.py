@@ -1,7 +1,8 @@
 import re
-from typing import List
-from src.utils.logger import custom_logger as logger
+
 from src.rag.faq.validator import FAQItemSchema
+from src.utils.logger import custom_logger as logger
+
 
 class FAQCleaner:
     """
@@ -38,7 +39,7 @@ class FAQCleaner:
         item.keywords = cleaned_keywords
         return item
 
-    def clean_all(self, items: List[FAQItemSchema]) -> List[FAQItemSchema]:
+    def clean_all(self, items: list[FAQItemSchema]) -> list[FAQItemSchema]:
         """
         Cleans a list of FAQItemSchema items in place.
         """

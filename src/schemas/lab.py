@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 
+
 class LabReportQuerySchema(BaseModel):
     patient_phone: str = Field(...)
 

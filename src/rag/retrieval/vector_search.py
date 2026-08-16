@@ -1,13 +1,13 @@
-from typing import List, Optional, Dict, Any
 import asyncio
-from qdrant_client import QdrantClient
+
 from qdrant_client.http import models
 
-from src.rag.embeddings.embedding_model import EmbeddingModel
-from src.rag.vectordb.qdrant_client import get_qdrant_client
-from src.rag.loaders.documents import Document
 from src.rag.config.settings import rag_settings
+from src.rag.embeddings.embedding_model import EmbeddingModel
+from src.rag.loaders.documents import Document
+from src.rag.vectordb.qdrant_client import get_qdrant_client
 from src.utils.logger import custom_logger as logger
+
 
 class VectorSearcher:
     """
@@ -24,10 +24,10 @@ class VectorSearcher:
 
     def _build_filter(
         self, 
-        category: Optional[str] = None, 
-        department: Optional[str] = None, 
-        doc_type: Optional[str] = None
-    ) -> Optional[models.Filter]:
+        category: str | None = None, 
+        department: str | None = None, 
+        doc_type: str | None = None
+    ) -> models.Filter | None:
         """
         Translates raw parameters into Qdrant keyword query payload filters.
         """
@@ -67,11 +67,11 @@ class VectorSearcher:
         query: str,
         collection_name: str,
         limit: int = 5,
-        category: Optional[str] = None,
-        department: Optional[str] = None,
-        doc_type: Optional[str] = None,
-        threshold: Optional[float] = None
-    ) -> List[Document]:
+        category: str | None = None,
+        department: str | None = None,
+        doc_type: str | None = None,
+        threshold: float | None = None
+    ) -> list[Document]:
         """
         Queries a single Qdrant collection with dynamic filtering and score thresholding.
         Safe execution boundary: catches all exceptions and logs them without throwing.
@@ -108,7 +108,7 @@ class VectorSearcher:
             hits = response.points
 
             # 5. Parse and Filter by Similarity Score Threshold
-            results: List[Document] = []
+            results: list[Document] = []
             for hit in hits:
                 if hit.score >= search_threshold:
                     payload = hit.payload or {}
@@ -136,10 +136,10 @@ class VectorSearcher:
         self,
         query: str,
         limit: int = 5,
-        category: Optional[str] = None,
-        department: Optional[str] = None,
-        doc_type: Optional[str] = None
-    ) -> List[Document]:
+        category: str | None = None,
+        department: str | None = None,
+        doc_type: str | None = None
+    ) -> list[Document]:
         """
         Searches both FAQ and Markdown collections and merges results sorted by similarity score.
         """

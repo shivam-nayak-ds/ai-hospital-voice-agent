@@ -1,12 +1,13 @@
-import sys
 import asyncio
+import sys
 from pathlib import Path
 
 # Ensure project root is in PYTHONPATH
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from src.utils.pdf_generator import generate_appointment_ticket
 from src.services.notification_service import NotificationService
+from src.utils.pdf_generator import generate_appointment_ticket
+
 
 async def test_layer1():
     print("="*60)

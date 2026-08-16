@@ -12,10 +12,9 @@ Applied BEFORE chunking to remove noise that would pollute embeddings:
 
 import re
 import unicodedata
-from typing import List
+
 from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
-
 
 # ─── Compiled Regex Patterns ──────────────────────────────────────────────────
 
@@ -100,14 +99,14 @@ class DocumentCleaner:
     Documents whose content becomes empty after cleaning are dropped.
     """
 
-    def clean_all(self, documents: List[Document]) -> List[Document]:
+    def clean_all(self, documents: list[Document]) -> list[Document]:
         """
         Cleans and filters a list of documents.
 
         Returns:
             List of documents with cleaned `page_content`, empty docs removed.
         """
-        cleaned: List[Document] = []
+        cleaned: list[Document] = []
         dropped = 0
 
         for doc in documents:

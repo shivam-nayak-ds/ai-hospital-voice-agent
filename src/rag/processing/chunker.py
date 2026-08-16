@@ -1,8 +1,13 @@
 import os
-from typing import List
-from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
-from src.utils.logger import custom_logger as logger
+
+from langchain_text_splitters import (
+    MarkdownHeaderTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
+
 from src.rag.loaders.documents import Document
+from src.utils.logger import custom_logger as logger
+
 
 class MarkdownChunker:
     """
@@ -31,7 +36,7 @@ class MarkdownChunker:
             separators=["\n\n", "\n", " ", ""]
         )
 
-    def chunk_document(self, doc: Document) -> List[Document]:
+    def chunk_document(self, doc: Document) -> list[Document]:
         """
         Splits a single Document into multiple structurally and semantically coherent chunk Documents.
         """
@@ -46,7 +51,7 @@ class MarkdownChunker:
             # Fallback to direct semantic splitting if header parsing fails
             header_splits = [Document(page_content=doc.page_content, metadata={})]
 
-        chunks: List[Document] = []
+        chunks: list[Document] = []
         chunk_idx = 0
 
         # Step B: Segment structural splits semantically using Recursive Splitter
@@ -96,7 +101,7 @@ class MarkdownChunker:
 
         return chunks
 
-    def chunk_all(self, docs: List[Document]) -> List[Document]:
+    def chunk_all(self, docs: list[Document]) -> list[Document]:
         """
         Chunks a list of documents and returns a consolidated list of chunks.
         """

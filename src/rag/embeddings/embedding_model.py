@@ -1,7 +1,7 @@
 import asyncio
-import httpx
 import os
-from typing import List, Optional
+
+import httpx
 
 # Force offline mode BEFORE any transformers imports (fixes Windows SSL issues)
 # This prevents huggingface_hub from making network requests
@@ -13,8 +13,9 @@ os.environ["HF_HUB_DISABLE_EXPERIMENTAL_WARNING"] = "1"
 os.environ["CURL_CA_BUNDLE"] = ""
 os.environ["REQUESTS_CA_BUNDLE"] = ""
 
-from src.utils.logger import custom_logger as logger
 from src.rag.config.settings import rag_settings
+from src.utils.logger import custom_logger as logger
+
 
 class EmbeddingModel:
     """
@@ -41,7 +42,7 @@ class EmbeddingModel:
             logger.error(f"Failed to load fallback sentence-transformers model {self.model_name}: {e}")
             raise e
 
-    async def _embed_via_api(self, texts: List[str]) -> Optional[List[List[float]]]:
+    async def _embed_via_api(self, texts: list[str]) -> list[list[float]] | None:
         """Queries external TEI server or Hugging Face Inference API for embeddings."""
         headers = {}
         if rag_settings.HF_API_TOKEN:
@@ -71,7 +72,7 @@ class EmbeddingModel:
             logger.warning(f"Failed to fetch embeddings from API: {e}")
         return None
 
-    async def embed_text(self, text: str) -> List[float]:
+    async def embed_text(self, text: str) -> list[float]:
         """
         Generates dense vector representation for a single text string.
         """
@@ -97,7 +98,7 @@ class EmbeddingModel:
             logger.error(f"Failed to generate local embedding: {e}")
             raise e
 
-    async def embed_documents(self, texts: List[str]) -> List[List[float]]:
+    async def embed_documents(self, texts: list[str]) -> list[list[float]]:
         """
         Generates dense vector representations for a list of text strings in batch.
         """

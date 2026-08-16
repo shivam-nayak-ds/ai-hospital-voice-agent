@@ -6,14 +6,23 @@ Manages multi-turn parameter gathering and executes database-backed tools.
 Includes comprehensive try-except safety wrappers and production logs.
 """
 
-from typing import Dict, Any
-from src.utils.logger import custom_logger as logger
+from typing import Any
 
 # Import database and transactional tools
-from src.tools.appointment_tool import check_slot_availability, book_appointment, cancel_appointment
-from src.tools.billing_tool import get_test_or_procedure_price, check_ward_rates, check_insurance_cashless
+from src.tools.appointment_tool import (
+    book_appointment,
+    cancel_appointment,
+    check_slot_availability,
+)
+from src.tools.billing_tool import (
+    check_insurance_cashless,
+    check_ward_rates,
+    get_test_or_procedure_price,
+)
+from src.tools.doctor_tool import get_doctor_schedule, search_doctors_by_specialty
 from src.tools.lab_tool import check_lab_report_status
-from src.tools.doctor_tool import search_doctors_by_specialty, get_doctor_schedule
+from src.utils.logger import custom_logger as logger
+
 
 class AshaOperationsAgent:
     """
@@ -23,7 +32,7 @@ class AshaOperationsAgent:
     def __init__(self):
         logger.success("AshaOperationsAgent initialized.")
 
-    async def run(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    async def run(self, state: dict[str, Any]) -> dict[str, Any]:
         session_id = state.get("session_id", "default")
         intent = state.get("current_intent")
         validation_errors = state.get("validation_errors", {})
@@ -51,11 +60,11 @@ class AshaOperationsAgent:
 
     async def _execute_operation(
         self,
-        state: Dict[str, Any],
+        state: dict[str, Any],
         intent: str,
-        validation_errors: Dict[str, str],
+        validation_errors: dict[str, str],
         log
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         try:
             # ─── 1. Handling Validation Errors First ─────────────────────────────────
             if validation_errors:

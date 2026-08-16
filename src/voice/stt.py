@@ -13,9 +13,9 @@ Migration notes:
 """
 
 import os
-import asyncio
 import threading
-from typing import Callable, Optional
+from collections.abc import Callable
+
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -23,8 +23,8 @@ try:
     from deepgram import (
         DeepgramClient,
         DeepgramClientOptions,
-        LiveTranscriptionEvents,
         LiveOptions,
+        LiveTranscriptionEvents,
     )
     _DEEPGRAM_AVAILABLE = True
 except ImportError:
@@ -54,9 +54,9 @@ class AshaSTT:
     def __init__(
         self,
         on_transcript_callback: Callable[[str, bool, float], None],
-        on_speech_start_callback: Optional[Callable[[], None]] = None,
+        on_speech_start_callback: Callable[[], None] | None = None,
     ):
-        self.api_key: Optional[str] = os.getenv("DEEPGRAM_API_KEY")
+        self.api_key: str | None = os.getenv("DEEPGRAM_API_KEY")
         if not self.api_key:
             logger.error("DEEPGRAM_API_KEY is not set — STT will not function.")
 
@@ -69,7 +69,7 @@ class AshaSTT:
         self._lock = threading.Lock()
 
         # Deepgram v3 client
-        self._client: Optional[DeepgramClient] = None
+        self._client: DeepgramClient | None = None
         self.dg_connection = None
 
         if _DEEPGRAM_AVAILABLE and self.api_key:

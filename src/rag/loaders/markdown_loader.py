@@ -1,7 +1,8 @@
-import os 
-from typing import List
+import os
+
 from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
+
 
 class MarkdownLoader:
 
@@ -13,7 +14,7 @@ class MarkdownLoader:
         if not os.path.exists(self.file_path):
             raise FileNotFoundError(f"File not found at {self.file_path}")
 
-    def load(self) -> List[Document]:
+    def load(self) -> list[Document]:
         """
         Loads the markdown file content and splits it into Document sections.
         """
@@ -29,8 +30,7 @@ class MarkdownLoader:
             parent_dir = os.path.basename(os.path.dirname(abs_path))
             
             category = parent_dir
-            if category.endswith(".md"):
-                category = category[:-3]
+            category = category.removesuffix(".md")
 
             # Determine document type based on parent directory name
             doc_type = "general"
@@ -76,7 +76,7 @@ class MarkdownLoader:
         except Exception as e:
             raise ValueError(f"Failed to read markdown file {self.file_path}: {e}")
 
-    def _split_by_headers(self, content: str) -> List[tuple[str, str]]:
+    def _split_by_headers(self, content: str) -> list[tuple[str, str]]:
         """
         Splits markdown content by '# ' and '## ' headers.
         Returns a list of tuples: (header_title, section_content)

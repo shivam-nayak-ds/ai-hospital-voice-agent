@@ -23,9 +23,8 @@ Problem Solved:
 """
 
 import re
-from typing import Optional
-from src.utils.logger import custom_logger as logger
 
+from src.utils.logger import custom_logger as logger
 
 # ─── 1. Smart Sentence Boundary Detector ─────────────────────────────────────
 
@@ -176,7 +175,7 @@ _MIN_CONFIDENCE = 0.70   # Ignore transcripts below this threshold
 _MIN_WORDS      = 2       # Ignore very short transcripts (noise artifacts)
 
 
-def filter_transcript(text: str, confidence: float) -> Optional[str]:
+def filter_transcript(text: str, confidence: float) -> str | None:
     """
     Returns cleaned transcript if valid, None if should be ignored.
 

@@ -1,14 +1,15 @@
-import sys
 import asyncio
 import datetime
+import sys
 from pathlib import Path
+
 from sqlalchemy import select
 
 # Ensure project root is in PYTHONPATH
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from src.db.session import get_db
 from src.db.models import Appointment, Patient
+from src.db.session import get_db
 from src.services.notification_service import NotificationService
 from src.utils.logger import custom_logger as logger
 

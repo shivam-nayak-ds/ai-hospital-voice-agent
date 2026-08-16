@@ -1,11 +1,12 @@
 import io
+
 from src.utils.logger import custom_logger as logger
 
 try:
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.units import inch
     from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import inch
+    from reportlab.pdfgen import canvas
     REPORTLAB_AVAILABLE = True
 except ImportError:
     REPORTLAB_AVAILABLE = False

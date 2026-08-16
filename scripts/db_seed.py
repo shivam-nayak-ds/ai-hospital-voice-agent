@@ -3,19 +3,27 @@ Lifeline Multi-Speciality Hospital — Production Database Seed
 Source of Truth: Knowledge Base (doctor_directory.json, departments_faqs.json)
 Location: Bhopal, Madhya Pradesh
 """
+import asyncio
 import datetime
 import random
 import sys
-import asyncio
+
 from sqlalchemy import text
-from src.db.session import engine, Base, AsyncSessionLocal
+
 from src.db.models import (
-    Department, Doctor, DoctorSchedule, Patient, Appointment,
-    BillingCatalog, InsuranceProvider, WardManagement, LabReport,
-    ConversationLog, AgentEvent, AuditLog
+    Appointment,
+    AuditLog,
+    BillingCatalog,
+    Department,
+    Doctor,
+    DoctorSchedule,
+    InsuranceProvider,
+    LabReport,
+    Patient,
+    WardManagement,
 )
+from src.db.session import AsyncSessionLocal, Base, engine
 from src.utils.logger import custom_logger as logger
-from config.settings import settings
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

@@ -1,8 +1,9 @@
 import os
-from pathlib import Path
-from src.utils.logger import custom_logger as logger
-from src.rag.loaders.documents import Document
+
 from src.rag.config.constants import VALID_DEPARTMENTS
+from src.rag.loaders.documents import Document
+from src.utils.logger import custom_logger as logger
+
 
 class MetadataExtractor:
     """

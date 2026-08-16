@@ -1,7 +1,8 @@
-import json
 import asyncio
+import json
+from collections.abc import AsyncGenerator
 from datetime import datetime
-from typing import Generator, AsyncGenerator
+
 from groq import Groq
 from openai import OpenAI
 

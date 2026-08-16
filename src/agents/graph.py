@@ -1,23 +1,22 @@
-import re
 import random
-from typing import Dict, Any
-from langgraph.graph import StateGraph, END
+import re
+from typing import Any, Optional
+
+from langgraph.graph import END, StateGraph
 
 from config.settings import settings
-from src.agents.state import AgentState
-from src.agents.prompts import SYSTEM_CHAT_PROMPT
-from src.utils.logger import custom_logger as logger
+from src.agents.guardrails import AshaGuardrails
+from src.agents.knowledge_agent import KnowledgeAgent
+from src.agents.memory import SessionMemoryManager
+from src.agents.operations_agent import AshaOperationsAgent
 
 # Import Multi-Agent Swarm Modules
 from src.agents.planner import AshaPlanner
-from src.agents.operations_agent import AshaOperationsAgent
-from src.agents.knowledge_agent import KnowledgeAgent
-from src.agents.guardrails import AshaGuardrails
+from src.agents.prompts import SYSTEM_CHAT_PROMPT
 from src.agents.response_builder import AshaResponseBuilder
-from src.agents.validator import AshaValidator
-from src.agents.memory import SessionMemoryManager
-
+from src.agents.state import AgentState
 from src.tools.emergency_tool import handle_emergency
+from src.utils.logger import custom_logger as logger
 from src.utils.message_helper import get_message_content
 
 # Reusable agent and helper instances (cached to prevent recreation every turn)
@@ -81,12 +80,12 @@ def _dispatch_otp_sms(phone: str, otp_code: str) -> bool:
     return False
 
 # In-memory fallback if Redis is unreachable in local offline test mode
-_pending_otps_fallback: Dict[str, str] = {}
+_pending_otps_fallback: dict[str, str] = {}
 
 
 # ─── LangGraph Nodes ──────────────────────────────────────────────────────────
 
-async def nlu_parser_node(state: AgentState) -> Dict[str, Any]:
+async def nlu_parser_node(state: AgentState) -> dict[str, Any]:
     """
     Supervisor Agent (Planner) Node: Sanitizes inputs, runs intent classification,
     extracts entities, and validates fields.
@@ -116,7 +115,7 @@ async def nlu_parser_node(state: AgentState) -> Dict[str, Any]:
     return updates
 
 
-async def otp_verification_node(state: AgentState) -> Dict[str, Any]:
+async def otp_verification_node(state: AgentState) -> dict[str, Any]:
     """
     Verifies caller credentials via Redis-backed TTL OTP and Twilio SMS delivery.
     """
@@ -194,7 +193,7 @@ async def otp_verification_node(state: AgentState) -> Dict[str, Any]:
         }
 
 
-async def tools_node(state: AgentState) -> Dict[str, Any]:
+async def tools_node(state: AgentState) -> dict[str, Any]:
     """
     Invokes specific structured tools based on mapped NLU intents.
     """
@@ -203,7 +202,7 @@ async def tools_node(state: AgentState) -> Dict[str, Any]:
     return res
 
 
-async def chat_node(state: AgentState) -> Dict[str, Any]:
+async def chat_node(state: AgentState) -> dict[str, Any]:
     """
     Handles friendly greeting and general chitchat conversation.
     Async to prevent blocking the event loop during LLM API calls.
@@ -212,7 +211,7 @@ async def chat_node(state: AgentState) -> Dict[str, Any]:
     logger.info("LangGraph Node: Chat Personas")
     messages = state.get("messages", [])
     
-    from src.agents.ananya_agent import get_groq_client, get_gemini_client
+    from src.agents.ananya_agent import get_gemini_client, get_groq_client
     from src.utils.message_helper import convert_messages_to_dicts
     
     groq_client = get_groq_client()
@@ -295,7 +294,7 @@ async def chat_node(state: AgentState) -> Dict[str, Any]:
     }
 
 
-async def rag_node(state: AgentState) -> Dict[str, Any]:
+async def rag_node(state: AgentState) -> dict[str, Any]:
     """
     Performs vector-based retrieval on hospital policy / FAQ knowledge base.
     """
@@ -307,7 +306,7 @@ async def rag_node(state: AgentState) -> Dict[str, Any]:
     return res
 
 
-def emergency_node(state: AgentState) -> Dict[str, Any]:
+def emergency_node(state: AgentState) -> dict[str, Any]:
     """
     Flags critical emergencies instantly.
     """
@@ -322,7 +321,7 @@ def emergency_node(state: AgentState) -> Dict[str, Any]:
     }
 
 
-def formatter_node(state: AgentState) -> Dict[str, Any]:
+def formatter_node(state: AgentState) -> dict[str, Any]:
     """
     Instant speech formatting using local heuristic rules (no LLM call).
     Runs post-execution medical guardrails check.

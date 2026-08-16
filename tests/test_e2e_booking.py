@@ -1,6 +1,9 @@
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
+
 from src.agents.ananya_agent import AshaSwarm
+
 
 @pytest.mark.asyncio
 async def test_e2e_booking_flow():

@@ -1,11 +1,12 @@
-import re
-import pickle
 import os
-from typing import List, Optional
+import pickle
+import re
+
 from rank_bm25 import BM25Okapi
 
 from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
+
 
 class BM25Searcher:
     """
@@ -14,7 +15,7 @@ class BM25Searcher:
     """
     def __init__(self, corpus_path: str = "data/processed/bm25_corpus.pkl"):
         self.corpus_path = corpus_path
-        self.corpus: List[Document] = []
+        self.corpus: list[Document] = []
         self._load_corpus()
 
     def _load_corpus(self) -> None:
@@ -34,7 +35,7 @@ class BM25Searcher:
             logger.error(f"Failed to deserialize BM25 corpus: {e}")
             self.corpus = []
 
-    def _tokenize(self, text: str) -> List[str]:
+    def _tokenize(self, text: str) -> list[str]:
         """
         Tokenizes text by converting to lowercase and extraction of alphanumeric words.
         """
@@ -49,10 +50,10 @@ class BM25Searcher:
         self,
         query: str,
         limit: int = 5,
-        category: Optional[str] = None,
-        department: Optional[str] = None,
-        doc_type: Optional[str] = None
-    ) -> List[Document]:
+        category: str | None = None,
+        department: str | None = None,
+        doc_type: str | None = None
+    ) -> list[Document]:
         """
         Executes sparse keyword search on the pre-filtered corpus.
         Safe execution boundary: catches all exceptions and logs them without throwing.
@@ -62,7 +63,7 @@ class BM25Searcher:
 
         try:
             # 1. Pre-filtering the corpus by metadata attributes
-            filtered_corpus: List[Document] = []
+            filtered_corpus: list[Document] = []
             for doc in self.corpus:
                 meta = doc.metadata or {}
                 

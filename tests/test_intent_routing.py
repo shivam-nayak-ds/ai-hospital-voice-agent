@@ -1,6 +1,9 @@
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import MagicMock, patch
+
 from src.agents.planner import AshaPlanner
+
 
 def test_determine_routing():
     planner = AshaPlanner()

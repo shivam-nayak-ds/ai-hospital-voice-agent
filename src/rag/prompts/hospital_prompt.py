@@ -9,7 +9,6 @@ All prompts are designed for voice-first delivery:
   - Safe medical boundaries enforced explicitly
 """
 
-from datetime import datetime
 
 
 # ─── RAG Answer Generation Prompt ────────────────────────────────────────────

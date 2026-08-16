@@ -8,10 +8,8 @@ This module provides a `EmbeddingPipeline` that wraps the lower-level
 scripts to convert `Document` objects into Qdrant-ready float vectors.
 """
 
-import asyncio
-from typing import List, Tuple
-from src.rag.loaders.documents import Document
 from src.rag.embeddings.embedding_model import EmbeddingModel
+from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
 
 
@@ -30,7 +28,7 @@ class EmbeddingPipeline:
         self.batch_size = batch_size
         self._model = EmbeddingModel()
 
-    async def run(self, documents: List[Document]) -> List[Tuple[Document, List[float]]]:
+    async def run(self, documents: list[Document]) -> list[tuple[Document, list[float]]]:
         """
         Embeds all documents in batches.
 
@@ -41,7 +39,7 @@ class EmbeddingPipeline:
         if not documents:
             return []
 
-        results: List[Tuple[Document, List[float]]] = []
+        results: list[tuple[Document, list[float]]] = []
         total = len(documents)
         logger.info(f"EmbeddingPipeline: embedding {total} documents in batches of {self.batch_size}.")
 
@@ -62,6 +60,6 @@ class EmbeddingPipeline:
         logger.success(f"EmbeddingPipeline: completed — {len(results)}/{total} documents embedded.")
         return results
 
-    async def embed_single(self, text: str) -> List[float]:
+    async def embed_single(self, text: str) -> list[float]:
         """Convenience wrapper to embed a single query string (used at retrieval time)."""
         return await self._model.embed_text(text)

@@ -5,14 +5,15 @@ Authentication endpoints for ASHA Hospital Agent.
 Handles OTP-based login and JWT token refresh.
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import Optional
+
 from src.core.auth import (
     create_access_token,
     create_refresh_token,
+    get_current_user,
     verify_token,
-    get_current_user
 )
 from src.utils.logger import custom_logger as logger
 

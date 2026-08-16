@@ -14,18 +14,18 @@ Requires env vars:
     LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, DEEPGRAM_API_KEY
 """
 
+import asyncio
 import os
 import sys
-import asyncio
-import logging
 
 sys.path.insert(0, ".")
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
-from livekit import rtc, agents
-from livekit.agents import AgentSession, AutoSubscribe
+from livekit import agents
+from livekit.agents import AutoSubscribe
 from livekit.agents.pipeline import VoicePipelineAgent
 from livekit.plugins import deepgram as dg_plugin
 

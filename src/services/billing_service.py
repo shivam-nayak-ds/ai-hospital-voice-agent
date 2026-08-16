@@ -1,16 +1,18 @@
-from typing import List
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.domain_exceptions import InsuranceVerificationError, ValidationError
+from src.db.models import BillingCatalog, InsuranceProvider, WardManagement
 from src.repositories.billing_repository import BillingRepository
-from src.db.models import BillingCatalog, WardManagement, InsuranceProvider
-from src.core.domain_exceptions import ValidationError, InsuranceVerificationError
 from src.schemas.billing import BillingQuerySchema, InsuranceQuerySchema
+
 
 class BillingService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.billing_repo = BillingRepository(db)
 
-    async def get_test_or_procedure_price(self, item_name: str) -> List[BillingCatalog]:
+    async def get_test_or_procedure_price(self, item_name: str) -> list[BillingCatalog]:
         """
         Retrieves pricing information for tests/procedures matching item_name.
         """
@@ -21,7 +23,7 @@ class BillingService:
 
         return await self.billing_repo.search_catalog_items(schema.item_name)
 
-    async def check_ward_rates(self) -> List[WardManagement]:
+    async def check_ward_rates(self) -> list[WardManagement]:
         """
         Retrieves all ward types and rates.
         """

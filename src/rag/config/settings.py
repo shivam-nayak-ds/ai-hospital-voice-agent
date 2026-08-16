@@ -1,5 +1,7 @@
 import os
+
 from config.settings import settings as main_settings
+
 
 class RAGSettings:
     # Embedding config (BGE-base-en-v1.5 has 768 dimensions)

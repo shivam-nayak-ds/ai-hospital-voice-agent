@@ -13,14 +13,14 @@ Solution:
   - Query result caching for read-heavy calls via Redis.
 """
 
-import os
-import time
-from typing import Optional, Dict, Any
+from typing import Any
+
 from dotenv import load_dotenv
-from src.utils.logger import custom_logger as logger
 from sqlalchemy import text
-from src.db.session import engine
+
 from config.settings import settings
+from src.db.session import engine
+from src.utils.logger import custom_logger as logger
 
 load_dotenv()
 
@@ -51,7 +51,7 @@ DB_CACHE_PREFIX = "asha:db:"
 DB_CACHE_TTL = 180      # 3 minutes for doctor/billing lists
 
 
-def _db_cache_get(key: str) -> Optional[str]:
+def _db_cache_get(key: str) -> str | None:
     if not DB_CACHE_AVAILABLE:
         return None
     try:
@@ -83,7 +83,7 @@ def _db_cache_invalidate(pattern: str):
 
 # ─── Appointment Conflict Detection ─────────────────────────────────────────
 
-def check_appointment_conflict(doctor_name: str, appointment_time: str) -> Dict[str, Any]:
+def check_appointment_conflict(doctor_name: str, appointment_time: str) -> dict[str, Any]:
     """
     Check if a doctor already has an appointment at the requested time.
     Returns: {"conflict": bool, "existing_patient": str or None}

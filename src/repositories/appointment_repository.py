@@ -1,8 +1,10 @@
-from typing import Optional
 from datetime import date
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.db.models import Appointment
+
 
 class AppointmentRepository:
     """
@@ -11,13 +13,13 @@ class AppointmentRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_by_id(self, appointment_id: int) -> Optional[Appointment]:
+    async def get_by_id(self, appointment_id: int) -> Appointment | None:
         """Fetches appointment details for the given appointment ID."""
         stmt = select(Appointment).filter(Appointment.ID == appointment_id)
         result = await self.db.execute(stmt)
         return result.scalars().first()
 
-    async def check_slot_conflict(self, doctor_id: int, appt_date: date, appt_time: str, lock: bool = False) -> Optional[Appointment]:
+    async def check_slot_conflict(self, doctor_id: int, appt_date: date, appt_time: str, lock: bool = False) -> Appointment | None:
         """Verifies if a specific slot is already reserved for a doctor."""
         stmt = select(Appointment).filter(
             Appointment.DOCTOR_ID == doctor_id,

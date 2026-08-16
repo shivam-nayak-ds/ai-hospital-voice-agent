@@ -1,6 +1,8 @@
-import time
 import functools
+import time
+
 from src.utils.logger import custom_logger as logger
+
 
 def track_latency(component_name: str):
     """

@@ -1,11 +1,12 @@
 import asyncio
+
 import httpx
-from typing import List, Optional
 from sentence_transformers import CrossEncoder
 
-from src.rag.loaders.documents import Document
 from src.rag.config.settings import rag_settings
+from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
+
 
 class CrossEncoderReranker:
     """
@@ -35,7 +36,7 @@ class CrossEncoderReranker:
             logger.critical(f"Failed to load Cross-Encoder {self.model_name}: {e}.")
             raise e
 
-    async def _rerank_via_api(self, query: str, texts: List[str]) -> Optional[List[float]]:
+    async def _rerank_via_api(self, query: str, texts: list[str]) -> list[float] | None:
         """
         Asynchronously queries an external TEI or HF Inference API for reranking scores.
         """
@@ -85,10 +86,10 @@ class CrossEncoderReranker:
     async def rerank(
         self,
         query: str,
-        candidates: List[Document],
+        candidates: list[Document],
         limit: int = 3,
         threshold: float = None
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         Asynchronously reranks candidates. Offloads to API if enabled,
         with seamless lazy-load fallback to local execution.

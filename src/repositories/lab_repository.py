@@ -1,7 +1,9 @@
-from typing import List
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.db.models import LabReport
+
 
 class LabRepository:
     """
@@ -10,7 +12,7 @@ class LabRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_patient_reports(self, patient_id: int) -> List[LabReport]:
+    async def get_patient_reports(self, patient_id: int) -> list[LabReport]:
         """Queries all lab test reports ordered for a specific patient ID."""
         stmt = (
             select(LabReport)

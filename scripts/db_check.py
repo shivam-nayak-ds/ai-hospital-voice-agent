@@ -1,6 +1,8 @@
-import sys
 import asyncio
+import sys
+
 from sqlalchemy import text
+
 from src.db.session import engine
 from src.utils.logger import custom_logger as logger
 

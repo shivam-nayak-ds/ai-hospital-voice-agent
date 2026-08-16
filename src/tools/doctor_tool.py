@@ -1,7 +1,8 @@
+from src.core.domain_exceptions import AshaBaseException
 from src.db.session import get_db_readonly
 from src.services.doctor_service import DoctorService
-from src.core.domain_exceptions import AshaBaseException
 from src.utils.logger import custom_logger as logger
+
 
 async def search_doctors_by_specialty(specialization: str) -> str:
     """

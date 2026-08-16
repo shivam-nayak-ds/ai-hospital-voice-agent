@@ -1,10 +1,12 @@
-from typing import List, Tuple
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.domain_exceptions import PatientNotFoundError, ValidationError
+from src.db.models import LabReport, Patient
 from src.repositories.lab_repository import LabRepository
 from src.repositories.patient_repository import PatientRepository
-from src.db.models import LabReport, Patient
-from src.core.domain_exceptions import ValidationError, PatientNotFoundError
 from src.schemas.lab import LabReportQuerySchema
+
 
 class LabService:
     def __init__(self, db: AsyncSession):
@@ -12,7 +14,7 @@ class LabService:
         self.lab_repo = LabRepository(db)
         self.patient_repo = PatientRepository(db)
 
-    async def get_patient_reports(self, patient_phone: str) -> Tuple[List[LabReport], Patient]:
+    async def get_patient_reports(self, patient_phone: str) -> tuple[list[LabReport], Patient]:
         """
         Retrieves all lab reports ordered for a patient matching the phone number.
         """

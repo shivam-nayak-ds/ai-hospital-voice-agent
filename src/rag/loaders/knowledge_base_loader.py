@@ -1,10 +1,11 @@
 import os
-from typing import List
+
 from src.rag.loaders.documents import Document
 from src.rag.loaders.json_loader import JSONLoader
 from src.rag.loaders.markdown_loader import MarkdownLoader
 from src.rag.loaders.pdf_loader import PDFLoader
 from src.utils.logger import custom_logger as logger
+
 
 class KnowledgeBaseLoader:
     """
@@ -14,7 +15,7 @@ class KnowledgeBaseLoader:
     def __init__(self, directory_path: str):
         self.directory_path = directory_path
 
-    def load_all(self) -> List[Document]:
+    def load_all(self) -> list[Document]:
         """
         Recursively scans the directory and returns a consolidated list of all parsed Document objects.
         """

@@ -1,5 +1,6 @@
-import pyaudio
 import numpy as np
+import pyaudio
+
 from src.utils.logger import custom_logger as logger
 
 

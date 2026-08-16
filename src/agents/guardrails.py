@@ -8,7 +8,7 @@ Implements pre-execution and post-execution guardrails for safety and policy com
 """
 
 import re
-from typing import Dict, Any, Tuple
+
 from src.utils.logger import custom_logger as logger
 
 # Standard compliance warning when medical boundaries are breached
@@ -56,7 +56,7 @@ class AshaGuardrails:
     Enforces HIPAA-compliant boundary checks and conversation safety.
     """
     @staticmethod
-    def inspect_input(user_query: str) -> Tuple[bool, str]:
+    def inspect_input(user_query: str) -> tuple[bool, str]:
         """
         Scans incoming transcripts for potential prompt injection attempts.
         Returns:

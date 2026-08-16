@@ -1,5 +1,6 @@
 from fastapi import status
 
+
 class AshaBaseException(Exception):
     """Base application domain exception."""
     def __init__(self, message: str, error_code: str, status_code: int = status.HTTP_400_BAD_REQUEST):

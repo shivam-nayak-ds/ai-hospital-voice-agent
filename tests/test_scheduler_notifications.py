@@ -1,11 +1,13 @@
-import pytest
-import datetime
 import asyncio
-from unittest.mock import MagicMock, AsyncMock, patch
+import datetime
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.utils.pdf_generator import generate_appointment_ticket
+import pytest
+
+from scripts.scheduler import parse_appointment_datetime, run_reminder_scan
 from src.services.notification_service import NotificationService
-from scripts.scheduler import run_reminder_scan, parse_appointment_datetime
+from src.utils.pdf_generator import generate_appointment_ticket
+
 
 def test_pdf_ticket_generator():
     """Assert that the ticket generator runs and outputs bytes (PDF or text fallback)."""

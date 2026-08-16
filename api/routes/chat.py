@@ -1,5 +1,7 @@
 import time
+
 from fastapi import APIRouter, HTTPException, status
+
 from api.schemas.request import ChatRequest
 from api.schemas.response import ChatResponse
 from src.agents.ananya_agent import AshaSwarm
@@ -69,5 +71,5 @@ async def chat_endpoint(payload: ChatRequest):
         log.exception(f"Exception raised in API Chat Handler: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to process chat query: {str(e)}"
+            detail=f"Failed to process chat query: {e!s}"
         )

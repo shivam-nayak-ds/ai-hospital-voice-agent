@@ -1,16 +1,16 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
-from config.settings import settings
-from api.routes.health import router as health_router
+from api.routes.auth import router as auth_router
 from api.routes.chat import router as chat_router
-from api.routes.twilio_voice import router as twilio_router
+from api.routes.health import router as health_router
 from api.routes.livekit_voice import router as livekit_router
 from api.routes.panel import router as panel_router
-from api.routes.auth import router as auth_router
+from api.routes.twilio_voice import router as twilio_router
+from config.settings import settings
 from src.core.handlers import register_exception_handlers
 from src.core.middleware.rate_limit import RedisRateLimitMiddleware
 from src.core.middleware.security_headers import SecurityHeadersMiddleware

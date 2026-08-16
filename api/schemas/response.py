@@ -1,5 +1,6 @@
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List, Dict, Any
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class ChatResponse(BaseModel):
     """Production Schema for Agent responses"""
@@ -8,8 +9,8 @@ class ChatResponse(BaseModel):
     response_text: str = Field(..., description="The main text response from AI")
     
     # Intelligence tracking
-    intent_detected: Optional[str] = Field(None, description="The intent AI identified")
-    suggested_actions: List[str] = Field(default_factory=list, description="Buttons/UI actions for frontend")
+    intent_detected: str | None = Field(None, description="The intent AI identified")
+    suggested_actions: list[str] = Field(default_factory=list, description="Buttons/UI actions for frontend")
     
     # Performance & Monitoring
     status: str = Field("success", description="Response status: success/error")
@@ -30,4 +31,4 @@ class ErrorResponse(BaseModel):
     """Standard Error Response for API"""
     error_code: str
     detail: str
-    trace_id: Optional[str] = None # For log correlation
+    trace_id: str | None = None # For log correlation

@@ -1,10 +1,13 @@
 import time
+
+import redis.asyncio as aioredis
 from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-from src.utils.logger import custom_logger as logger
+
 from config.settings import settings
-import redis.asyncio as aioredis
+from src.utils.logger import custom_logger as logger
+
 
 class RedisRateLimitMiddleware(BaseHTTPMiddleware):
     """

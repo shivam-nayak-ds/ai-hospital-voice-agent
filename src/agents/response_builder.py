@@ -10,7 +10,9 @@ This avoids blocking the event loop for 1-3 seconds on every response.
 """
 
 import re
+
 from src.utils.logger import custom_logger as logger
+
 
 class AshaResponseBuilder:
     """
@@ -39,7 +41,7 @@ class AshaResponseBuilder:
             # Step 3: Collapse multiple spaces into one
             formatted_speech = re.sub(r'\s+', ' ', formatted_speech).strip()
             
-            log.info(f"Speech formatted via local heuristics in <1ms")
+            log.info("Speech formatted via local heuristics in <1ms")
             return formatted_speech
 
         except Exception as e:

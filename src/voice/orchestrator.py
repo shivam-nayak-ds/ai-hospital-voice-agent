@@ -1,15 +1,21 @@
-import time
-import sys
 import asyncio
 import enum
 import re
-from typing import Optional, Callable
+import sys
+import time
+from collections.abc import Callable
 
+from src.agents.ananya_agent import AshaIntentClassifier, AshaSwarm
+from src.utils.logger import custom_logger as logger
 from src.voice.stt import AshaSTT
 from src.voice.tts import AshaTTS
-from src.agents.ananya_agent import AshaSwarm, AshaIntentClassifier
-from src.utils.logger import custom_logger as logger
-from src.voice.voice_quality import filter_transcript, TranscriptDeduplicator, smart_split_sentences, speak_with_intent
+from src.voice.voice_quality import (
+    TranscriptDeduplicator,
+    filter_transcript,
+    smart_split_sentences,
+    speak_with_intent,
+)
+
 
 class VoiceState(enum.Enum):
     LISTENING = "LISTENING"
@@ -26,7 +32,7 @@ class AshaVoiceOrchestrator:
       - Async Task Management
     """
 
-    def __init__(self, output_callback: Optional[Callable] = None, user_id: str = "default_user"):
+    def __init__(self, output_callback: Callable | None = None, user_id: str = "default_user"):
         logger.info(f"Initializing Async ASHA Voice Orchestrator for {user_id}...")
         self.brain = AshaSwarm(user_id=user_id)
         # Classifier is kept only for TTS prosody (SSML rate/pitch selection).
@@ -38,7 +44,7 @@ class AshaVoiceOrchestrator:
         self.tts.output_callback = output_callback
 
         self.state = VoiceState.LISTENING
-        self._current_task: Optional[asyncio.Task] = None
+        self._current_task: asyncio.Task | None = None
         self._stop_event = asyncio.Event()
 
         # Dedup guard
@@ -234,6 +240,7 @@ class AshaVoiceOrchestrator:
 
 if __name__ == "__main__":
     import pyaudio
+
     from src.voice.recorder import AshaVoiceRecorder
 
     orch = AshaVoiceOrchestrator()

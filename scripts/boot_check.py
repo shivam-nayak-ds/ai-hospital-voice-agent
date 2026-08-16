@@ -1,10 +1,12 @@
 import os
 import sys
-import httpx
+
 from sqlalchemy import text
+
 from config.settings import settings
 from src.db.session import engine
 from src.utils.logger import custom_logger as logger
+
 
 def check_postgres() -> bool:
     logger.info("Checking PostgreSQL Connection...")
@@ -65,8 +67,8 @@ def check_redis() -> bool:
 def check_qdrant() -> bool:
     logger.info("Checking Qdrant Vector DB Connection...")
     try:
-        from src.rag.vectordb.qdrant_client import get_qdrant_client
         from src.rag.config.settings import rag_settings
+        from src.rag.vectordb.qdrant_client import get_qdrant_client
         client = get_qdrant_client()
         
         # Get collections

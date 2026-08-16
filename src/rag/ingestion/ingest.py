@@ -1,30 +1,28 @@
-import sys
-import uuid
 import hashlib
 import pickle
+import sys
 import time
+import uuid
 from pathlib import Path
-from typing import List
 
 # Ensure project root is in PYTHONPATH
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from qdrant_client import QdrantClient
 from qdrant_client.http import models
 
+from src.rag.config.settings import rag_settings
+from src.rag.embeddings.embedding_model import EmbeddingModel
 from src.rag.faq.pipeline import FAQPipeline
 from src.rag.loaders.knowledge_base_loader import KnowledgeBaseLoader
-from src.rag.processing.validator import DocumentValidator
-from src.rag.processing.metadata_handler import MetadataExtractor
 from src.rag.processing.chunker import MarkdownChunker
-
-from src.rag.embeddings.embedding_model import EmbeddingModel
+from src.rag.processing.metadata_handler import MetadataExtractor
+from src.rag.processing.validator import DocumentValidator
+from src.rag.vectordb.collections import create_collection, recreate_collection
 from src.rag.vectordb.qdrant_client import get_qdrant_client
-from src.rag.vectordb.collections import recreate_collection, create_collection
-from src.rag.config.settings import rag_settings
 from src.utils.logger import custom_logger as logger
 
-async def ingest_faqs(batch_size: int = 32) -> List[models.PointStruct]:
+
+async def ingest_faqs(batch_size: int = 32) -> list[models.PointStruct]:
     """
     Orchestrates structured FAQ Ingestion Pipeline.
     Returns list of processed Qdrant PointStruct items.
@@ -96,7 +94,7 @@ async def ingest_faqs(batch_size: int = 32) -> List[models.PointStruct]:
     
     return points
 
-async def ingest_markdown(batch_size: int = 32, force_reload: bool = False) -> List[models.PointStruct]:
+async def ingest_markdown(batch_size: int = 32, force_reload: bool = False) -> list[models.PointStruct]:
     """
     Orchestrates Markdown Ingestion Pipeline:
     1. Scan raw markdown files recursively.

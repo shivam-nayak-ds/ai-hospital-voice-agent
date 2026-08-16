@@ -6,12 +6,13 @@ Handles access tokens (short-lived) and refresh tokens (long-lived).
 """
 
 import time
-from typing import Optional
+
 import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from src.utils.logger import custom_logger as logger
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from config.settings import settings
+from src.utils.logger import custom_logger as logger
 
 # ─── JWT Configuration ─────────────────────────────────────────────────────────
 JWT_SECRET = settings.JWT_SECRET
@@ -61,7 +62,7 @@ def create_refresh_token(user_id: str) -> str:
     return token
 
 
-def verify_token(token: str) -> Optional[dict]:
+def verify_token(token: str) -> dict | None:
     """
     Verifies a JWT token's signature and expiration.
     Returns the payload dict if valid, None if invalid/expired.
@@ -84,7 +85,7 @@ security_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme)
 ) -> dict:
     """
     FastAPI dependency that extracts and validates the JWT from Authorization header.
@@ -133,8 +134,8 @@ async def require_admin(user: dict = Depends(get_current_user)) -> dict:
 
 
 async def optional_auth(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security_scheme)
-) -> Optional[dict]:
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme)
+) -> dict | None:
     """
     FastAPI dependency for optional authentication.
     Returns user dict if token is valid, None if no token provided.

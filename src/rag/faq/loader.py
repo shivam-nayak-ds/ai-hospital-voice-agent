@@ -1,7 +1,9 @@
-import os
 import json
-from typing import List, Dict, Any
+import os
+from typing import Any
+
 from src.utils.logger import custom_logger as logger
+
 
 class FAQLoader:
     """
@@ -10,7 +12,7 @@ class FAQLoader:
     def __init__(self, file_path: str):
         self.file_path = file_path
 
-    def load(self) -> List[Dict[str, Any]]:
+    def load(self) -> list[dict[str, Any]]:
         """
         Loads and parses a single JSON FAQ file. Returns a list of raw dictionaries.
         """

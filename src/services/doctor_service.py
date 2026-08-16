@@ -1,15 +1,17 @@
-from typing import List, Tuple
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.repositories.doctor_repository import DoctorRepository
+
+from src.core.domain_exceptions import DoctorNotFoundError, ValidationError
 from src.db.models import Doctor, DoctorSchedule
-from src.core.domain_exceptions import ValidationError, DoctorNotFoundError
+from src.repositories.doctor_repository import DoctorRepository
+
 
 class DoctorService:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.doctor_repo = DoctorRepository(db)
 
-    async def search_doctors_by_specialty(self, specialization: str) -> List[Doctor]:
+    async def search_doctors_by_specialty(self, specialization: str) -> list[Doctor]:
         """
         Retrieves active doctors matching a specialization query.
         """
@@ -20,7 +22,7 @@ class DoctorService:
             )
         return await self.doctor_repo.search_by_specialty(specialization)
 
-    async def get_doctor_schedule(self, doctor_name: str) -> Tuple[List[DoctorSchedule], Doctor]:
+    async def get_doctor_schedule(self, doctor_name: str) -> tuple[list[DoctorSchedule], Doctor]:
         """
         Retrieves schedule details for a single resolved active doctor.
         """

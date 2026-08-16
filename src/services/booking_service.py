@@ -1,15 +1,22 @@
-from datetime import datetime, date
+from datetime import datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.repositories.appointment_repository import AppointmentRepository
-from src.repositories.doctor_repository import DoctorRepository
-from src.repositories.patient_repository import PatientRepository
-from src.schemas.appointment import SlotCheckSchema, AppointmentBookSchema, AppointmentCancelSchema
+
 from src.core.domain_exceptions import (
     DoctorNotFoundError,
     SlotUnavailableError,
-    ValidationError
+    ValidationError,
+)
+from src.repositories.appointment_repository import AppointmentRepository
+from src.repositories.doctor_repository import DoctorRepository
+from src.repositories.patient_repository import PatientRepository
+from src.schemas.appointment import (
+    AppointmentBookSchema,
+    AppointmentCancelSchema,
+    SlotCheckSchema,
 )
 from src.utils.logger import custom_logger as logger
+
 
 class BookingService:
     def __init__(self, db: AsyncSession):
@@ -122,8 +129,9 @@ class BookingService:
             logger.info(f"Booked Appointment ID {appt.ID}: {patient.NAME} with Dr. {doctor.NAME}")
             
             # Resolve department location for address info
-            from src.db.models import Department
             from sqlalchemy import select
+
+            from src.db.models import Department
             location = "Main Clinic"
             if doctor.DEPARTMENT_ID:
                 stmt = select(Department.LOCATION).where(Department.ID == doctor.DEPARTMENT_ID)

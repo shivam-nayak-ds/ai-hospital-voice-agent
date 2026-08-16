@@ -6,8 +6,8 @@ Generates room tokens so the browser UI can connect to LiveKit Cloud.
 """
 
 import os
-import time
 import uuid
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
@@ -96,7 +96,7 @@ async def get_livekit_token(
         raise
     except Exception as e:
         logger.error(f"Failed to generate LiveKit token: {e}")
-        raise HTTPException(status_code=500, detail=f"Token generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Token generation failed: {e!s}")
 
 
 @router.post("/token", response_model=TokenResponse, summary="Get LiveKit room token (POST)")
@@ -125,4 +125,4 @@ async def post_livekit_token(req: TokenRequest):
         raise
     except Exception as e:
         logger.error(f"Failed to generate LiveKit token: {e}")
-        raise HTTPException(status_code=500, detail=f"Token generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Token generation failed: {e!s}")

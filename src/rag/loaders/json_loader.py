@@ -1,8 +1,9 @@
-import os
 import json
-from typing import List
+import os
+
 from src.rag.loaders.documents import Document
 from src.utils.logger import custom_logger as logger
+
 
 class JSONLoader:
     """
@@ -12,7 +13,7 @@ class JSONLoader:
         self.file_path = file_path
         logger.info(f"Loading JSON file from: {file_path}")
 
-    def load(self) -> List[Document]:
+    def load(self) -> list[Document]:
         """
         Loads and parses the JSON file. Each FAQ entry is converted into a Document object.
         """

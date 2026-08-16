@@ -1,12 +1,14 @@
-import os
 import asyncio
-import re
-import io
 import base64
-import requests
+import io
+import os
+import re
+
 import pygame
-from src.utils.logger import custom_logger as logger
+import requests
 from dotenv import load_dotenv
+
+from src.utils.logger import custom_logger as logger
 
 try:
     import edge_tts
@@ -91,11 +93,7 @@ class AshaTTS:
         try:
             if self.backend == "edge":
                 await self._play_edge_tts(text)
-            elif self.backend == "google":
-                audio = await asyncio.to_thread(self.engine.generate, text)
-                if audio:
-                    await self._play_bytes(audio)
-            elif self.backend == "azure":
+            elif self.backend == "google" or self.backend == "azure":
                 audio = await asyncio.to_thread(self.engine.generate, text)
                 if audio:
                     await self._play_bytes(audio)

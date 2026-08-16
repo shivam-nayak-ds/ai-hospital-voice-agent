@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field, field_validator
 from datetime import date, datetime
-import re
+
+from pydantic import BaseModel, Field, field_validator
+
 
 class SlotCheckSchema(BaseModel):
     doctor_name: str = Field(..., min_length=2, max_length=100)

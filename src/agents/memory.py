@@ -8,10 +8,11 @@ Includes RedisSessionStore for cross-worker session sharing (Gunicorn multi-work
 """
 
 import json
-from typing import List, Dict, Any, Optional
-from src.utils.logger import custom_logger as logger
+from typing import Any
 
+from src.utils.logger import custom_logger as logger
 from src.utils.message_helper import get_message_role
+
 
 class SessionMemoryManager:
     """
@@ -21,7 +22,7 @@ class SessionMemoryManager:
         self.max_history_turns = max_history_turns
         logger.info(f"SessionMemoryManager initialized with max_history_turns={max_history_turns}")
 
-    def prune_messages(self, messages: List[Any]) -> List[Any]:
+    def prune_messages(self, messages: list[Any]) -> list[Any]:
         """
         Prunes the list of messages to ensure we only keep the system prompt 
         and the last N active conversation turns (user/assistant exchanges).
@@ -40,7 +41,7 @@ class SessionMemoryManager:
             
         return system_messages + chat_messages
 
-    def extract_patient_context(self, state: Dict[str, Any]) -> Dict[str, Any]:
+    def extract_patient_context(self, state: dict[str, Any]) -> dict[str, Any]:
         """
         Extracts stable patient context parameters for persistence or logging.
         """
@@ -68,6 +69,7 @@ class RedisSessionStore:
         """Lazy-initialize Redis connection."""
         if self._redis is None:
             import redis.asyncio as aioredis
+
             from config.settings import settings
             self._redis = aioredis.Redis(
                 host=settings.REDIS_HOST,
@@ -82,7 +84,7 @@ class RedisSessionStore:
         """Redis key format for session state."""
         return f"asha:session:{session_id}"
     
-    async def load(self, session_id: str) -> Optional[Dict[str, Any]]:
+    async def load(self, session_id: str) -> dict[str, Any] | None:
         """
         Load session state from Redis.
         Returns the state dict if found, None if session doesn't exist or expired.
@@ -99,7 +101,7 @@ class RedisSessionStore:
             logger.warning(f"Redis session load failed, creating fresh session: {e}")
             return None
     
-    async def save(self, session_id: str, state: Dict[str, Any], ttl_hours: int = 2):
+    async def save(self, session_id: str, state: dict[str, Any], ttl_hours: int = 2):
         """
         Save session state to Redis with TTL.
         Serializes the AgentState dict to JSON and stores it.
@@ -111,11 +113,7 @@ class RedisSessionStore:
             for k, v in state.items():
                 if v is None:
                     serializable[k] = None
-                elif isinstance(v, (str, int, float, bool)):
-                    serializable[k] = v
-                elif isinstance(v, list):
-                    serializable[k] = v
-                elif isinstance(v, dict):
+                elif isinstance(v, (str, int, float, bool)) or isinstance(v, list) or isinstance(v, dict):
                     serializable[k] = v
                 else:
                     serializable[k] = str(v)

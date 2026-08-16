@@ -1,7 +1,9 @@
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from src.utils.logger import custom_logger as logger
+
 from src.rag.config.settings import rag_settings
+from src.utils.logger import custom_logger as logger
+
 
 def create_collection(client: QdrantClient, collection_name: str, vector_size: int = 768) -> None:
     """

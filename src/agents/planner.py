@@ -10,15 +10,17 @@ Responsible for:
 Includes try-except guards and bound trace logging.
 """
 
+import asyncio
 import json
 import re
-import asyncio
 from datetime import datetime
-from typing import Dict, Any, Tuple
+from typing import Any
+
 from config.settings import settings
 from src.agents.state import AgentState
 from src.agents.validator import AshaValidator
 from src.utils.logger import custom_logger as logger
+
 
 class AshaPlanner:
     """
@@ -48,7 +50,7 @@ class AshaPlanner:
             return "faq"
         return None
 
-    async def run_nlu(self, state: AgentState) -> Dict[str, Any]:
+    async def run_nlu(self, state: AgentState) -> dict[str, Any]:
         """
         Runs the NLU extraction step to determine intent and entities.
         Updates state with the parsed parameters and validates them.
@@ -63,7 +65,7 @@ class AshaPlanner:
                 return {}
 
             # Import LLM client helpers locally to avoid circular dependencies
-            from src.agents.ananya_agent import get_groq_client, get_gemini_client
+            from src.agents.ananya_agent import get_gemini_client, get_groq_client
             groq_client = get_groq_client()
             gemini_client = get_gemini_client()
             
@@ -174,8 +176,8 @@ class AshaPlanner:
                     intent = prev_intent
                     
             # Compile state updates
-            updates: Dict[str, Any] = {"current_intent": intent}
-            validation_errors: Dict[str, str] = {}
+            updates: dict[str, Any] = {"current_intent": intent}
+            validation_errors: dict[str, str] = {}
             
             # Merge existing entities with new ones if new ones are provided
             for key in ["patient_name", "patient_phone", "doctor_name", "specialization", "appointment_date", "appointment_time", "appointment_id"]:
@@ -227,7 +229,7 @@ class AshaPlanner:
                 "validation_errors": {}
             }
 
-    def determine_routing(self, intent: str, state: AgentState, updates: Dict[str, Any]) -> str:
+    def determine_routing(self, intent: str, state: AgentState, updates: dict[str, Any]) -> str:
         """
         Determines the next agent node based on the intent and verification status.
         Encapsulates safety gates (OTP requirement).

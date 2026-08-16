@@ -1,11 +1,11 @@
 import hashlib
-from typing import List, Optional
 
 from src.rag.loaders.documents import Document
-from src.rag.retrieval.vector_search import VectorSearcher
 from src.rag.retrieval.bm25_search import BM25Searcher
 from src.rag.retrieval.reranker import CrossEncoderReranker
+from src.rag.retrieval.vector_search import VectorSearcher
 from src.utils.logger import custom_logger as logger
+
 
 class HybridRetriever:
     """
@@ -46,7 +46,7 @@ class HybridRetriever:
         # Fallback to text hashing
         return hashlib.sha256(doc.page_content.encode("utf-8")).hexdigest()
 
-    def rrf_merge(self, dense_docs: List[Document], sparse_docs: List[Document], k: int = 60) -> List[Document]:
+    def rrf_merge(self, dense_docs: list[Document], sparse_docs: list[Document], k: int = 60) -> list[Document]:
         """
         Merges dense and sparse lists using Reciprocal Rank Fusion (RRF) algorithm.
         RRF Score: sum( 1 / (k + rank) ) for each search source.
@@ -89,11 +89,11 @@ class HybridRetriever:
         self,
         query: str,
         limit: int = 3,
-        category: Optional[str] = None,
-        department: Optional[str] = None,
-        doc_type: Optional[str] = None,
+        category: str | None = None,
+        department: str | None = None,
+        doc_type: str | None = None,
         candidate_multiplier: int = 4
-    ) -> List[Document]:
+    ) -> list[Document]:
         """
         Orchestrates dense search, sparse search, RRF fusion, and Cross-Encoder reranking.
         Safe execution boundary: handles all component errors gracefully.
