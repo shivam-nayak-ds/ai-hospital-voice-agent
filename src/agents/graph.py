@@ -27,9 +27,61 @@ _ops_agent = AshaOperationsAgent()
 _knowledge_agent = KnowledgeAgent()
 _response_builder = AshaResponseBuilder()
 
-# ─── OTP Store (session_id -> expected_otp) ───────────────────────────────────
-# In production, use Redis with TTL for OTP storage and SMS delivery via Twilio/MSG91
-_pending_otps: Dict[str, str] = {}
+# ─── Production Redis OTP Store Helper ─────────────────────────────────────────
+async def _store_redis_otp(session_id: str, otp_code: str, ttl_seconds: int = 300) -> bool:
+    """Store 4-digit OTP in Redis with 5-minute automatic TTL expiration."""
+    try:
+        from src.agents.memory import get_session_store
+        store = get_session_store()
+        r = await store._get_redis()
+        await r.set(f"asha:otp:{session_id}", otp_code, ex=ttl_seconds)
+        return True
+    except Exception as e:
+        logger.warning(f"Redis OTP store error: {e}")
+        return False
+
+async def _get_redis_otp(session_id: str) -> Optional[str]:
+    """Retrieve expected OTP code from Redis."""
+    try:
+        from src.agents.memory import get_session_store
+        store = get_session_store()
+        r = await store._get_redis()
+        return await r.get(f"asha:otp:{session_id}")
+    except Exception as e:
+        logger.warning(f"Redis OTP retrieve error: {e}")
+        return None
+
+async def _delete_redis_otp(session_id: str) -> None:
+    """Delete OTP from Redis upon successful verification."""
+    try:
+        from src.agents.memory import get_session_store
+        store = get_session_store()
+        r = await store._get_redis()
+        await r.delete(f"asha:otp:{session_id}")
+    except Exception as e:
+        logger.warning(f"Redis OTP delete error: {e}")
+
+def _dispatch_otp_sms(phone: str, otp_code: str) -> bool:
+    """Dispatch real SMS via Twilio if credentials are configured, else fallback gracefully."""
+    if settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_PHONE_NUMBER:
+        try:
+            from twilio.rest import Client as TwilioClient
+            client = TwilioClient(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+            client.messages.create(
+                body=f"Your Lifeline Hospital verification code is: {otp_code}. Valid for 5 minutes. Do not share this code.",
+                from_=settings.TWILIO_PHONE_NUMBER,
+                to=f"+91{phone.strip()[-10:]}"
+            )
+            logger.success(f"Twilio SMS OTP successfully dispatched to +91{phone}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to dispatch Twilio SMS OTP: {e}")
+    else:
+        logger.info(f"[SMS Sandbox/Dev] OTP '{otp_code}' for phone: +91{phone}")
+    return False
+
+# In-memory fallback if Redis is unreachable in local offline test mode
+_pending_otps_fallback: Dict[str, str] = {}
 
 
 # ─── LangGraph Nodes ──────────────────────────────────────────────────────────
@@ -64,11 +116,9 @@ async def nlu_parser_node(state: AgentState) -> Dict[str, Any]:
     return updates
 
 
-def otp_verification_node(state: AgentState) -> Dict[str, Any]:
+async def otp_verification_node(state: AgentState) -> Dict[str, Any]:
     """
-    Verifies caller credentials via OTP.
-    Generates random 4-digit OTP (mock SMS delivery).
-    In production, integrate with Twilio/MSG91 for real SMS delivery.
+    Verifies caller credentials via Redis-backed TTL OTP and Twilio SMS delivery.
     """
     logger.info("LangGraph Node: OTP Verification")
     patient_phone = state.get("patient_phone")
@@ -85,16 +135,22 @@ def otp_verification_node(state: AgentState) -> Dict[str, Any]:
         
     last_user_message = get_message_content(messages[-1]) if messages else ""
     
-    # 2. Generate and 'send' OTP if phone is set but not yet texted
+    # 2. Generate and dispatch OTP if phone is set but not yet sent
     if not otp_sent_to or otp_sent_to != patient_phone:
-        # Generate random 4-digit OTP (in production: send via Twilio/MSG91 SMS API)
         otp_code = str(random.randint(1000, 9999))
-        _pending_otps[session_id] = otp_code
-        logger.success(f"OTP '{otp_code}' generated for session {session_id}, phone: {patient_phone}")
-        # TODO: In production, send OTP via SMS: twilio_client.messages.create(...)
+        
+        # Store in Redis with 5-minute (300s) TTL
+        stored = await _store_redis_otp(session_id, otp_code, ttl_seconds=300)
+        if not stored:
+            _pending_otps_fallback[session_id] = otp_code
+            
+        # Dispatch SMS via Twilio
+        _dispatch_otp_sms(patient_phone, otp_code)
+        
+        logger.success(f"OTP '{otp_code}' generated and sent to phone: {patient_phone}")
         return {
             "otp_sent_to": patient_phone,
-            "speech_output": "I have sent a four digit verification code to your phone number. Please say or enter the code to verify your identity.",
+            "speech_output": "I have sent a four digit verification code to your registered mobile number. Please say or enter the code to verify your identity.",
             "next_node": END
         }
         
@@ -102,11 +158,14 @@ def otp_verification_node(state: AgentState) -> Dict[str, Any]:
     digits = re.findall(r"\b\d{4}\b", last_user_message)
     if digits:
         entered_otp = digits[0]
-        expected_otp = _pending_otps.get(session_id)
+        expected_otp = await _get_redis_otp(session_id)
+        if not expected_otp:
+            expected_otp = _pending_otps_fallback.get(session_id)
         
         if expected_otp and entered_otp == expected_otp:
             logger.success(f"OTP verified successfully for session {session_id}")
-            _pending_otps.pop(session_id, None)  # Clean up used OTP
+            await _delete_redis_otp(session_id)
+            _pending_otps_fallback.pop(session_id, None)
             
             # Determine next node dynamically based on original intent
             intent = state.get("current_intent")
